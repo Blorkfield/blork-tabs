@@ -1,0 +1,82 @@
+name: Auto Create PR
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - 'release/**'
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Parse branch name
+        id: parse
+        run: |
+          BRANCH="$GITHUB_REF_NAME"
+
+          # Extract prefix and description
+          if [[ "$BRANCH" == *"/"* ]]; then
+            PREFIX="${BRANCH%%/*}"
+            DESC="${BRANCH#*/}"
+          elif [[ "$BRANCH" == *"-"* ]]; then
+            PREFIX="${BRANCH%%-*}"
+            DESC="${BRANCH#*-}"
+          else
+            PREFIX=""
+            DESC="$BRANCH"
+          fi
+
+          # Map branch prefixes to conventional commit types
+          case "$PREFIX" in
+            feature|feat)      TYPE="feat" ;;
+            fix|bugfix|hotfix) TYPE="fix" ;;
+            chore)             TYPE="chore" ;;
+            docs|doc)          TYPE="docs" ;;
+            refactor)          TYPE="refactor" ;;
+            perf|performance)  TYPE="perf" ;;
+            test|tests)        TYPE="test" ;;
+            style)             TYPE="style" ;;
+            ci)                TYPE="ci" ;;
+            build)             TYPE="build" ;;
+            breaking)          TYPE="feat!" ;;
+            *)                 TYPE="" ;;
+          esac
+
+          # Format the title
+          if [ -n "$TYPE" ]; then
+            DESC_READABLE=$(echo "$DESC" | tr '-' ' ' | tr '_' ' ')
+            TITLE="$TYPE: $DESC_READABLE"
+          else
+            TITLE="$BRANCH"
+          fi
+
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        run: |
+          EXISTING_PR=$(gh pr list --head "$GITHUB_REF_NAME" --json number --jq '.[0].number')
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "PR #$EXISTING_PR already exists for branch $GITHUB_REF_NAME"
+          else
+            gh pr create \
+              --title "${{ steps.parse.outputs.title }}" \
+              --body "Auto-generated PR for branch \`$GITHUB_REF_NAME\`" \
+              --base main
+          fi
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}

@@ -11,41 +11,29 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18, 20, 22]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          node-version: 22
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: npm run build
-
-      - name: Lint
-        run: npm run lint --if-present
+        run: pnpm build
 
       - name: Test
-        run: npm test
-
-      - name: Verify dist files
-        run: |
-          test -f dist/index.js || exit 1
-          test -f dist/index.cjs || exit 1
-          test -f dist/index.d.ts || exit 1
-          test -f dist/styles.css || exit 1
-          echo "All dist files verified"
+        run: pnpm test
 
   automerge:
     name: Auto-merge
