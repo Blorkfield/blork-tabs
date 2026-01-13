@@ -23,12 +23,17 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.bot-token.outputs.token }}
 
-      - name: Parse branch name
+      - name: Setup Git
+        run: |
+          git config user.name "bork-blot[bot]"
+          git config user.email "bork-blot[bot]@users.noreply.github.com"
+
+      - name: Parse branch and create changeset
         id: parse
         run: |
           BRANCH="$GITHUB_REF_NAME"
 
-          # Extract prefix and description
+          # Extract prefix and description (handles both / and - separators)
           if [[ "$BRANCH" == *"/"* ]]; then
             PREFIX="${BRANCH%%/*}"
             DESC="${BRANCH#*/}"
@@ -40,20 +45,20 @@ jobs:
             DESC="$BRANCH"
           fi
 
-          # Map branch prefixes to conventional commit types
+          # Map branch prefixes to conventional commit types and bump types
           case "$PREFIX" in
-            feature|feat)      TYPE="feat" ;;
-            fix|bugfix|hotfix) TYPE="fix" ;;
-            chore)             TYPE="chore" ;;
-            docs|doc)          TYPE="docs" ;;
-            refactor)          TYPE="refactor" ;;
-            perf|performance)  TYPE="perf" ;;
-            test|tests)        TYPE="test" ;;
-            style)             TYPE="style" ;;
-            ci)                TYPE="ci" ;;
-            build)             TYPE="build" ;;
-            breaking)          TYPE="feat!" ;;
-            *)                 TYPE="" ;;
+            feature|feat)      TYPE="feat"; BUMP="minor" ;;
+            fix|bugfix|hotfix) TYPE="fix"; BUMP="patch" ;;
+            chore)             TYPE="chore"; BUMP="patch" ;;
+            docs|doc)          TYPE="docs"; BUMP="patch" ;;
+            refactor)          TYPE="refactor"; BUMP="patch" ;;
+            perf|performance)  TYPE="perf"; BUMP="patch" ;;
+            test|tests)        TYPE="test"; BUMP="patch" ;;
+            style)             TYPE="style"; BUMP="patch" ;;
+            ci)                TYPE="ci"; BUMP="patch" ;;
+            build)             TYPE="build"; BUMP="patch" ;;
+            breaking)          TYPE="feat"; BUMP="major" ;;
+            *)                 TYPE=""; BUMP="" ;;
           esac
 
           # Format the title
@@ -65,6 +70,47 @@ jobs:
           fi
 
           echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "bump=$BUMP" >> $GITHUB_OUTPUT
+          echo "desc=$DESC" >> $GITHUB_OUTPUT
+
+      - name: Create changeset file
+        if: steps.parse.outputs.bump != ''
+        run: |
+          BUMP="${{ steps.parse.outputs.bump }}"
+          DESC="${{ steps.parse.outputs.desc }}"
+          TITLE="${{ steps.parse.outputs.title }}"
+          BRANCH="$GITHUB_REF_NAME"
+
+          # Create a safe filename from branch name
+          CHANGESET_FILE=$(echo "$DESC" | tr '/' '-' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
+          CHANGESET_PATH=".changeset/${CHANGESET_FILE}.md"
+
+          # Skip if changeset already exists for this branch
+          if [ -f "$CHANGESET_PATH" ]; then
+            echo "Changeset already exists for this branch, skipping creation"
+            exit 0
+          fi
+
+          # Create changeset file for the single package
+          mkdir -p .changeset
+          cat > "$CHANGESET_PATH" << EOF
+          ---
+          "@blorkfield/blork-tabs": $BUMP
+          ---
+
+          $TITLE
+          EOF
+
+          # Fix indentation (heredoc adds leading spaces)
+          sed -i 's/^          //' "$CHANGESET_PATH"
+
+          echo "Created changeset: $CHANGESET_PATH"
+          cat "$CHANGESET_PATH"
+
+          # Commit and push the changeset
+          git add .changeset/
+          git commit -m "chore: add changeset for $BRANCH"
+          git push
 
       - name: Create Pull Request
         run: |
