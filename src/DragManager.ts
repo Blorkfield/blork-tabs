@@ -11,7 +11,6 @@ import type {
   SnapTarget,
   AnchorSnapResult,
   ResolvedTabManagerConfig,
-  CSSClasses,
 } from './types';
 import {
   getConnectedGroup,
@@ -43,7 +42,6 @@ export interface DragCallbacks {
 export class DragManager {
   private panels: Map<string, PanelState>;
   private config: ResolvedTabManagerConfig;
-  private classes: CSSClasses;
   private callbacks: DragCallbacks;
   private activeDrag: DragState | null = null;
 
@@ -53,12 +51,10 @@ export class DragManager {
   constructor(
     panels: Map<string, PanelState>,
     config: ResolvedTabManagerConfig,
-    classes: CSSClasses,
     callbacks: DragCallbacks
   ) {
     this.panels = panels;
     this.config = config;
-    this.classes = classes;
     this.callbacks = callbacks;
 
     this.boundMouseMove = this.handleMouseMove.bind(this);

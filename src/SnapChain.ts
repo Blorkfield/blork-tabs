@@ -7,7 +7,6 @@ import type {
   PanelState,
   SnapTarget,
   SnapSide,
-  Position,
   ResolvedTabManagerConfig,
 } from './types';
 

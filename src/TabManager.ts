@@ -71,7 +71,6 @@ export class TabManager {
   private anchorManager: AnchorManager;
   private snapPreview: SnapPreview;
   private eventListeners: Map<string, Set<EventListener<unknown>>> = new Map();
-  private initialized = false;
 
   constructor(userConfig: TabManagerConfig = {}) {
     // Merge user config with defaults
@@ -93,7 +92,6 @@ export class TabManager {
     this.dragManager = new DragManager(
       this.panels,
       this.config,
-      this.classes,
       {
         onDragStart: this.handleDragStart.bind(this),
         onDragMove: this.handleDragMove.bind(this),
@@ -106,8 +104,6 @@ export class TabManager {
     if (this.config.initializeDefaultAnchors) {
       this.anchorManager.addDefaultAnchors();
     }
-
-    this.initialized = true;
   }
 
   // ==================== Panel Management ====================
@@ -507,6 +503,5 @@ export class TabManager {
 
     this.panels.clear();
     this.eventListeners.clear();
-    this.initialized = false;
   }
 }
