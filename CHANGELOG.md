@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.1.3
+
+### Patch Changes
+
+- b19f013: fix: npm token
+
 ## 0.1.2
 
 ### Patch Changes
