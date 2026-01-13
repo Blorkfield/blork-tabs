@@ -1,0 +1,320 @@
+/**
+ * @blorkfield/blork-tabs - Type Definitions
+ * A framework-agnostic tab/panel management system with snapping and docking
+ */
+
+// ==================== Configuration Types ====================
+
+/**
+ * Configuration for initializing the TabManager
+ */
+export interface TabManagerConfig {
+  /** Distance threshold for panel-to-panel snapping (default: 50) */
+  snapThreshold?: number;
+  /** Gap between snapped panels (default: 0) */
+  panelGap?: number;
+  /** Margin from window edges (default: 16) */
+  panelMargin?: number;
+  /** Distance threshold for anchor snapping (default: 80) */
+  anchorThreshold?: number;
+  /** Default panel width for anchor calculations (default: 300) */
+  defaultPanelWidth?: number;
+  /** Container element for panels (default: document.body) */
+  container?: HTMLElement;
+  /** Whether to automatically initialize default anchors (default: true) */
+  initializeDefaultAnchors?: boolean;
+  /** Custom CSS class prefix (default: 'blork-tabs') */
+  classPrefix?: string;
+}
+
+/**
+ * Resolved configuration with all defaults applied
+ */
+export interface ResolvedTabManagerConfig {
+  snapThreshold: number;
+  panelGap: number;
+  panelMargin: number;
+  anchorThreshold: number;
+  defaultPanelWidth: number;
+  container: HTMLElement;
+  initializeDefaultAnchors: boolean;
+  classPrefix: string;
+}
+
+/**
+ * Configuration for creating a new panel
+ */
+export interface PanelConfig {
+  /** Unique identifier for the panel */
+  id: string;
+  /** Panel title displayed in header */
+  title?: string;
+  /** Initial width (default: 300) */
+  width?: number;
+  /** Initial collapsed state (default: true) */
+  startCollapsed?: boolean;
+  /** Initial position (optional - will be auto-positioned if not provided) */
+  initialPosition?: { x: number; y: number };
+  /** Content element or HTML string */
+  content?: HTMLElement | string;
+  /** Custom panel element (for existing DOM panels) */
+  element?: HTMLDivElement;
+  /** Custom drag handle element */
+  dragHandle?: HTMLDivElement;
+  /** Custom collapse button element */
+  collapseButton?: HTMLButtonElement;
+  /** Custom content wrapper element */
+  contentWrapper?: HTMLDivElement;
+  /** Custom detach grip element */
+  detachGrip?: HTMLDivElement;
+  /** Whether panel can be collapsed (default: true) */
+  collapsible?: boolean;
+  /** Whether panel can be detached from group (default: true) */
+  detachable?: boolean;
+  /** Whether panel can be dragged (default: true) */
+  draggable?: boolean;
+  /** Z-index for panel (default: 1000) */
+  zIndex?: number;
+  /** Z-index when dragging (default: 1002) */
+  dragZIndex?: number;
+}
+
+/**
+ * Configuration for anchor points
+ */
+export interface AnchorConfig {
+  /** Unique identifier for the anchor */
+  id: string;
+  /** Function that returns the anchor position (allows dynamic positioning) */
+  getPosition: () => Position;
+  /** Whether to show visual indicator (default: true) */
+  showIndicator?: boolean;
+}
+
+/**
+ * Preset anchor positions
+ */
+export type AnchorPreset =
+  | 'top-left'
+  | 'top-right'
+  | 'top-center'
+  | 'bottom-left'
+  | 'bottom-right'
+  | 'bottom-center'
+  | 'center-left'
+  | 'center-right';
+
+// ==================== State Types ====================
+
+/**
+ * Current state of a panel
+ */
+export interface PanelState {
+  /** Unique panel identifier */
+  id: string;
+  /** DOM element for the panel */
+  element: HTMLDivElement;
+  /** Drag handle element */
+  dragHandle: HTMLDivElement;
+  /** Collapse button element (if collapsible) */
+  collapseButton: HTMLButtonElement | null;
+  /** Content wrapper element */
+  contentWrapper: HTMLDivElement;
+  /** Detach grip element (if detachable) */
+  detachGrip: HTMLDivElement | null;
+  /** Whether panel is currently collapsed */
+  isCollapsed: boolean;
+  /** ID of panel this is snapped to on its right (outgoing link) */
+  snappedTo: string | null;
+  /** ID of panel snapped to this on its left (incoming link) */
+  snappedFrom: string | null;
+  /** Panel configuration */
+  config: PanelConfig;
+}
+
+/**
+ * Current drag operation state
+ */
+export interface DragState {
+  /** Panel that initiated the drag */
+  grabbedPanel: PanelState;
+  /** Mouse offset from panel left edge */
+  offsetX: number;
+  /** Mouse offset from panel top edge */
+  offsetY: number;
+  /** Initial positions of all connected panels */
+  initialGroupPositions: Map<string, Position>;
+  /** Panels being moved in this drag operation */
+  movingPanels: PanelState[];
+  /** Drag mode - single panel or entire group */
+  mode: DragMode;
+}
+
+/**
+ * Drag mode determines what gets moved
+ */
+export type DragMode = 'single' | 'group';
+
+/**
+ * Anchor state including visual indicator
+ */
+export interface AnchorState {
+  /** Anchor configuration */
+  config: AnchorConfig;
+  /** Visual indicator element */
+  indicator: HTMLDivElement | null;
+}
+
+// ==================== Result Types ====================
+
+/**
+ * Result of snap target detection
+ */
+export interface SnapTarget {
+  /** ID of the target panel */
+  targetId: string;
+  /** Which side of target to snap to */
+  side: SnapSide;
+  /** X position for snap */
+  x: number;
+  /** Y position for snap */
+  y: number;
+}
+
+/**
+ * Side of panel to snap to
+ */
+export type SnapSide = 'left' | 'right';
+
+/**
+ * Result of anchor snap detection
+ */
+export interface AnchorSnapResult {
+  /** The matched anchor */
+  anchor: AnchorState;
+  /** Index of panel in group that docks to anchor */
+  dockPanelIndex: number;
+  /** Final positions for all panels in the group */
+  positions: Position[];
+}
+
+/**
+ * Simple x,y position
+ */
+export interface Position {
+  x: number;
+  y: number;
+}
+
+/**
+ * Bounding rectangle
+ */
+export interface Bounds {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+  width: number;
+  height: number;
+}
+
+// ==================== Event Types ====================
+
+/**
+ * Events emitted by TabManager
+ */
+export interface TabManagerEvents {
+  /** Fired when a panel is added */
+  'panel:added': PanelAddedEvent;
+  /** Fired when a panel is removed */
+  'panel:removed': PanelRemovedEvent;
+  /** Fired when a panel starts being dragged */
+  'drag:start': DragStartEvent;
+  /** Fired during drag movement */
+  'drag:move': DragMoveEvent;
+  /** Fired when drag ends */
+  'drag:end': DragEndEvent;
+  /** Fired when panels snap together */
+  'snap:panel': PanelSnapEvent;
+  /** Fired when panels snap to anchor */
+  'snap:anchor': AnchorSnapEvent;
+  /** Fired when a panel is detached from group */
+  'panel:detached': PanelDetachedEvent;
+  /** Fired when panel collapse state changes */
+  'panel:collapse': PanelCollapseEvent;
+}
+
+export interface PanelAddedEvent {
+  panel: PanelState;
+}
+
+export interface PanelRemovedEvent {
+  panelId: string;
+}
+
+export interface DragStartEvent {
+  panel: PanelState;
+  mode: DragMode;
+  movingPanels: PanelState[];
+}
+
+export interface DragMoveEvent {
+  panel: PanelState;
+  position: Position;
+  snapTarget: SnapTarget | null;
+  anchorTarget: AnchorSnapResult | null;
+}
+
+export interface DragEndEvent {
+  panel: PanelState;
+  finalPosition: Position;
+  snappedToPanel: boolean;
+  snappedToAnchor: boolean;
+}
+
+export interface PanelSnapEvent {
+  movingPanels: PanelState[];
+  targetPanel: PanelState;
+  side: SnapSide;
+}
+
+export interface AnchorSnapEvent {
+  movingPanels: PanelState[];
+  anchor: AnchorState;
+}
+
+export interface PanelDetachedEvent {
+  panel: PanelState;
+  previousGroup: PanelState[];
+}
+
+export interface PanelCollapseEvent {
+  panel: PanelState;
+  isCollapsed: boolean;
+}
+
+/**
+ * Event listener function type
+ */
+export type EventListener<T> = (event: T) => void;
+
+// ==================== CSS Class Names ====================
+
+/**
+ * CSS class names used by the library
+ */
+export interface CSSClasses {
+  panel: string;
+  panelHeader: string;
+  panelTitle: string;
+  panelContent: string;
+  panelContentCollapsed: string;
+  detachGrip: string;
+  collapseButton: string;
+  snapPreview: string;
+  snapPreviewVisible: string;
+  anchorIndicator: string;
+  anchorIndicatorVisible: string;
+  anchorIndicatorActive: string;
+  dragging: string;
+}
