@@ -7,7 +7,6 @@ import type {
   PanelConfig,
   PanelState,
   CSSClasses,
-  ResolvedTabManagerConfig,
 } from './types';
 
 /**
