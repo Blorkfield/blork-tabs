@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.2.0
+
+### Minor Changes
+
+- 400891d: feat: local test
+
 ## 0.1.3
 
 ### Patch Changes
