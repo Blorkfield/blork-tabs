@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.2.1
+
+### Patch Changes
+
+- ba873c5: refactor: trusted publisher
+
 ## 0.2.0
 
 ### Minor Changes
