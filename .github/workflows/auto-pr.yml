@@ -85,9 +85,15 @@ jobs:
           CHANGESET_FILE=$(echo "$DESC" | tr '/' '-' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
           CHANGESET_PATH=".changeset/${CHANGESET_FILE}.md"
 
-          # Skip if changeset already exists for this branch
+          # Skip if changeset already exists for THIS branch
           if [ -f "$CHANGESET_PATH" ]; then
             echo "Changeset already exists for this branch, skipping creation"
+            exit 0
+          fi
+
+          # Check if there are any relevant changes compared to main
+          if ! git diff --name-only origin/main...HEAD | grep -qE "^(src/|testbed/|package\.json|tsconfig\.json|styles\.css)"; then
+            echo "No relevant changes detected, skipping changeset"
             exit 0
           fi
 
