@@ -109,6 +109,9 @@ jobs:
     needs: check-release
     if: needs.check-release.outputs.is_release_merge == 'true' || github.event.inputs.force_publish == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout
@@ -119,7 +122,9 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          registry-url: "https://registry.npmjs.org"
+
+      - name: Update npm for OIDC support
+        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: npm ci
@@ -127,7 +132,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Publish to npm
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH }}
+      - name: Publish to npm with provenance
+        run: npm publish --access public --provenance
