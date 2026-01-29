@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.2.2
+
+### Patch Changes
+
+- 83ddb14: fix: trusted publisher
+
 ## 0.2.1
 
 ### Patch Changes

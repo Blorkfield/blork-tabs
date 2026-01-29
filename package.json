@@ -1,6 +1,6 @@
 {
   "name": "@blorkfield/blork-tabs",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A framework-agnostic tab/panel management system with snapping and docking",
   "type": "module",
   "main": "dist/index.cjs",
