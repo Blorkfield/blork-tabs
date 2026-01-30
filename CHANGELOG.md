@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.2.5
+
+### Patch Changes
+
+- 77e0533: fix: scroll css
+
 ## 0.2.4
 
 ### Patch Changes
