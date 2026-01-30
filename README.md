@@ -138,6 +138,40 @@ const manager = new TabManager({
 | `panel:detached` | Panel detached from chain |
 | `panel:collapse` | Panel collapsed/expanded |
 
+## Multi-Section Panel Content
+
+When creating panels with multiple sections (like a command menu with categories), put all sections within a **single `content` string**. Do not use multiple panels or multiple content wrappers—this breaks scrolling and causes content cutoff.
+
+**Correct approach:**
+
+```typescript
+manager.addPanel({
+  id: 'command-menu',
+  title: 'Commands',
+  content: `
+    <div style="margin-bottom: 12px;">
+      <div style="font-size: 11px; font-weight: 600; color: #4a90d9; padding: 4px 8px; text-transform: uppercase;">File</div>
+      <div>New File</div>
+      <div>Open...</div>
+      <div>Save</div>
+    </div>
+    <div style="margin-bottom: 12px;">
+      <div style="font-size: 11px; font-weight: 600; color: #4a90d9; padding: 4px 8px; text-transform: uppercase;">Edit</div>
+      <div>Undo</div>
+      <div>Redo</div>
+      <div>Cut</div>
+    </div>
+    <div>
+      <div style="font-size: 11px; font-weight: 600; color: #4a90d9; padding: 4px 8px; text-transform: uppercase;">View</div>
+      <div>Zoom In</div>
+      <div>Zoom Out</div>
+    </div>
+  `,
+});
+```
+
+The panel content area has a max-height (default `20vh`) with `overflow-y: auto`, so long content scrolls properly. Splitting sections across multiple content wrappers defeats this behavior.
+
 ## CSS Customization
 
 Override CSS variables to customize appearance:
@@ -151,6 +185,7 @@ Override CSS variables to customize appearance:
   --blork-tabs-header-bg: #2a2a4a;
   --blork-tabs-header-color: #e0e0e0;
   --blork-tabs-content-bg: #1a1a2e;
+  --blork-tabs-content-max-height: 20vh;
   --blork-tabs-accent: #4a90d9;
 }
 ```

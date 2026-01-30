@@ -163,66 +163,31 @@ function createSampleContent(type: string): string {
         </div>
       `;
 
-    case 'long-menu':
-      return `
-        <div style="display: flex; flex-direction: column; gap: 2px; font-size: 12px;">
-          ${[
-            'New File', 'New Window', 'New Tab', 'New Project', 'New Workspace',
-            'Open File...', 'Open Folder...', 'Open Recent', 'Open from URL...',
-            'Save', 'Save As...', 'Save All', 'Save Copy As...', 'Auto Save',
-            'Close', 'Close All', 'Close Others', 'Close Saved', 'Close Window',
-            'Preferences', 'Settings', 'Keyboard Shortcuts', 'User Snippets',
-            'Undo', 'Redo', 'Undo All', 'Redo All', 'Repeat Last Action',
-            'Cut', 'Copy', 'Paste', 'Paste Special', 'Delete', 'Select All',
-            'Find', 'Find and Replace', 'Find in Files', 'Find Next', 'Find Previous',
-            'Go to Line', 'Go to Symbol', 'Go to Definition', 'Go to Declaration',
-            'View Source', 'Toggle Sidebar', 'Toggle Panel', 'Toggle Minimap',
-            'Zoom In', 'Zoom Out', 'Reset Zoom', 'Full Screen', 'Zen Mode',
-            'Split Editor', 'Split Down', 'Split Right', 'Close Split',
-            'Run', 'Run Without Debugging', 'Start Debugging', 'Stop Debugging',
-            'Step Over', 'Step Into', 'Step Out', 'Continue', 'Restart',
-            'Toggle Breakpoint', 'Clear All Breakpoints', 'Enable All Breakpoints',
-            'Git: Init', 'Git: Clone', 'Git: Commit', 'Git: Push', 'Git: Pull',
-            'Git: Fetch', 'Git: Checkout', 'Git: Merge', 'Git: Rebase', 'Git: Stash',
-            'Terminal: New', 'Terminal: Split', 'Terminal: Kill', 'Terminal: Clear',
-            'Extensions: Install', 'Extensions: Update All', 'Extensions: Disable',
-            'Help', 'Documentation', 'Release Notes', 'Report Issue', 'About',
-            'Check for Updates', 'Privacy Policy', 'Terms of Service', 'License',
-            'Export Settings', 'Import Settings', 'Reset to Defaults', 'Factory Reset',
-            'Print', 'Print Preview', 'Page Setup', 'Export as PDF',
-            'Share', 'Share Link', 'Collaborate', 'Invite Others', 'Live Share',
-            'Format Document', 'Format Selection', 'Organize Imports', 'Sort Lines',
-            'Toggle Comment', 'Add Line Comment', 'Remove Line Comment', 'Block Comment',
-            'Fold', 'Unfold', 'Fold All', 'Unfold All', 'Fold Level 1', 'Fold Level 2',
-            'Transform to Uppercase', 'Transform to Lowercase', 'Transform to Title Case',
-            'Trim Trailing Whitespace', 'Convert Indentation', 'Detect Indentation',
-            'Insert Line Above', 'Insert Line Below', 'Move Line Up', 'Move Line Down',
-            'Duplicate Line', 'Delete Line', 'Join Lines', 'Transpose Characters',
-            'Expand Selection', 'Shrink Selection', 'Add Cursor Above', 'Add Cursor Below',
-            'Select All Occurrences', 'Change All Occurrences', 'Rename Symbol',
-            'Peek Definition', 'Peek References', 'Peek Type Definition',
-            'Show Hover', 'Trigger Suggest', 'Parameter Hints', 'Quick Fix',
-            'Refactor', 'Extract Method', 'Extract Variable', 'Inline Variable',
-            'Source Action', 'Organize Imports', 'Generate Getters/Setters',
-            'Toggle Word Wrap', 'Toggle Render Whitespace', 'Toggle Control Characters',
-            'Compare with Saved', 'Compare with Clipboard', 'Compare Selected',
-            'Bookmark: Toggle', 'Bookmark: Next', 'Bookmark: Previous', 'Bookmark: Clear',
-            'Task: Run Task', 'Task: Configure Tasks', 'Task: Terminate Task',
-            'Build: Build', 'Build: Rebuild', 'Build: Clean', 'Build: Cancel',
-            'Test: Run All', 'Test: Run Failed', 'Test: Debug', 'Test: Coverage',
-            'Deploy', 'Deploy to Staging', 'Deploy to Production', 'Rollback',
-            'Open in Browser', 'Copy Path', 'Copy Relative Path', 'Reveal in Finder',
-            'Add to Workspace', 'Remove from Workspace', 'Duplicate Workspace',
-            'Color Theme', 'File Icon Theme', 'Product Icon Theme', 'High Contrast',
-            'Screen Reader Mode', 'Reduce Motion', 'Accessibility Help',
-          ].map((item, i) => `
-            <div style="padding: 6px 12px; background: rgba(255,255,255,${i % 2 === 0 ? '0.03' : '0.01'}); border-radius: 4px; cursor: pointer; transition: background 0.15s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='rgba(74,144,217,0.2)'" onmouseout="this.style.background='rgba(255,255,255,${i % 2 === 0 ? '0.03' : '0.01'})'">
-              <span>${item}</span>
-              <span style="color: #666; font-size: 10px;">${i % 5 === 0 ? '⌘' + String.fromCharCode(65 + (i % 26)) : ''}</span>
-            </div>
-          `).join('')}
+    case 'long-menu': {
+      const sections = [
+        { title: 'File', items: ['New File', 'New Window', 'Open File...', 'Open Folder...', 'Open Recent', 'Save', 'Save As...', 'Save All', 'Close', 'Close All'] },
+        { title: 'Edit', items: ['Undo', 'Redo', 'Cut', 'Copy', 'Paste', 'Paste Special', 'Delete', 'Select All', 'Find', 'Find and Replace', 'Find in Files'] },
+        { title: 'View', items: ['Toggle Sidebar', 'Toggle Panel', 'Toggle Minimap', 'Zoom In', 'Zoom Out', 'Reset Zoom', 'Full Screen', 'Zen Mode'] },
+        { title: 'Go', items: ['Go to Line', 'Go to Symbol', 'Go to Definition', 'Go to Declaration', 'Go to File', 'Back', 'Forward'] },
+        { title: 'Run', items: ['Start Debugging', 'Run Without Debugging', 'Stop', 'Restart', 'Step Over', 'Step Into', 'Step Out', 'Continue'] },
+        { title: 'Git', items: ['Init Repository', 'Clone', 'Commit', 'Push', 'Pull', 'Fetch', 'Checkout Branch', 'Merge', 'Rebase', 'Stash', 'Pop Stash'] },
+        { title: 'Terminal', items: ['New Terminal', 'Split Terminal', 'Kill Terminal', 'Clear', 'Run Task', 'Configure Tasks'] },
+        { title: 'Help', items: ['Documentation', 'Release Notes', 'Report Issue', 'Check for Updates', 'About'] },
+      ];
+      return sections.map(section => `
+        <div style="margin-bottom: 8px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a90d9; padding: 4px 8px; text-transform: uppercase; letter-spacing: 0.5px;">${section.title}</div>
+          <div style="display: flex; flex-direction: column; gap: 1px;">
+            ${section.items.map((item, i) => `
+              <div style="padding: 5px 12px; background: rgba(255,255,255,${i % 2 === 0 ? '0.03' : '0.01'}); border-radius: 3px; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='rgba(74,144,217,0.2)'" onmouseout="this.style.background='rgba(255,255,255,${i % 2 === 0 ? '0.03' : '0.01'})'">
+                <span>${item}</span>
+                <span style="color: #555; font-size: 10px;">${i === 0 ? '⌘' + section.title[0] : ''}</span>
+              </div>
+            `).join('')}
+          </div>
         </div>
-      `;
+      `).join('');
+    }
 
     default:
       return `<p style="color: #888; font-size: 12px;">Content for ${type}</p>`;
