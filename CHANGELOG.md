@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.2.3
+
+### Patch Changes
+
+- 51e46c9: fix: content v scroll
+
 ## 0.2.2
 
 ### Patch Changes
