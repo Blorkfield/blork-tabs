@@ -165,62 +165,144 @@ function createSampleContent(type: string): string {
 
     case 'long-menu':
       return `
-        <div style="display: flex; flex-direction: column; gap: 2px; font-size: 12px;">
-          ${[
-            'New File', 'New Window', 'New Tab', 'New Project', 'New Workspace',
-            'Open File...', 'Open Folder...', 'Open Recent', 'Open from URL...',
-            'Save', 'Save As...', 'Save All', 'Save Copy As...', 'Auto Save',
-            'Close', 'Close All', 'Close Others', 'Close Saved', 'Close Window',
-            'Preferences', 'Settings', 'Keyboard Shortcuts', 'User Snippets',
-            'Undo', 'Redo', 'Undo All', 'Redo All', 'Repeat Last Action',
-            'Cut', 'Copy', 'Paste', 'Paste Special', 'Delete', 'Select All',
-            'Find', 'Find and Replace', 'Find in Files', 'Find Next', 'Find Previous',
-            'Go to Line', 'Go to Symbol', 'Go to Definition', 'Go to Declaration',
-            'View Source', 'Toggle Sidebar', 'Toggle Panel', 'Toggle Minimap',
-            'Zoom In', 'Zoom Out', 'Reset Zoom', 'Full Screen', 'Zen Mode',
-            'Split Editor', 'Split Down', 'Split Right', 'Close Split',
-            'Run', 'Run Without Debugging', 'Start Debugging', 'Stop Debugging',
-            'Step Over', 'Step Into', 'Step Out', 'Continue', 'Restart',
-            'Toggle Breakpoint', 'Clear All Breakpoints', 'Enable All Breakpoints',
-            'Git: Init', 'Git: Clone', 'Git: Commit', 'Git: Push', 'Git: Pull',
-            'Git: Fetch', 'Git: Checkout', 'Git: Merge', 'Git: Rebase', 'Git: Stash',
-            'Terminal: New', 'Terminal: Split', 'Terminal: Kill', 'Terminal: Clear',
-            'Extensions: Install', 'Extensions: Update All', 'Extensions: Disable',
-            'Help', 'Documentation', 'Release Notes', 'Report Issue', 'About',
-            'Check for Updates', 'Privacy Policy', 'Terms of Service', 'License',
-            'Export Settings', 'Import Settings', 'Reset to Defaults', 'Factory Reset',
-            'Print', 'Print Preview', 'Page Setup', 'Export as PDF',
-            'Share', 'Share Link', 'Collaborate', 'Invite Others', 'Live Share',
-            'Format Document', 'Format Selection', 'Organize Imports', 'Sort Lines',
-            'Toggle Comment', 'Add Line Comment', 'Remove Line Comment', 'Block Comment',
-            'Fold', 'Unfold', 'Fold All', 'Unfold All', 'Fold Level 1', 'Fold Level 2',
-            'Transform to Uppercase', 'Transform to Lowercase', 'Transform to Title Case',
-            'Trim Trailing Whitespace', 'Convert Indentation', 'Detect Indentation',
-            'Insert Line Above', 'Insert Line Below', 'Move Line Up', 'Move Line Down',
-            'Duplicate Line', 'Delete Line', 'Join Lines', 'Transpose Characters',
-            'Expand Selection', 'Shrink Selection', 'Add Cursor Above', 'Add Cursor Below',
-            'Select All Occurrences', 'Change All Occurrences', 'Rename Symbol',
-            'Peek Definition', 'Peek References', 'Peek Type Definition',
-            'Show Hover', 'Trigger Suggest', 'Parameter Hints', 'Quick Fix',
-            'Refactor', 'Extract Method', 'Extract Variable', 'Inline Variable',
-            'Source Action', 'Organize Imports', 'Generate Getters/Setters',
-            'Toggle Word Wrap', 'Toggle Render Whitespace', 'Toggle Control Characters',
-            'Compare with Saved', 'Compare with Clipboard', 'Compare Selected',
-            'Bookmark: Toggle', 'Bookmark: Next', 'Bookmark: Previous', 'Bookmark: Clear',
-            'Task: Run Task', 'Task: Configure Tasks', 'Task: Terminate Task',
-            'Build: Build', 'Build: Rebuild', 'Build: Clean', 'Build: Cancel',
-            'Test: Run All', 'Test: Run Failed', 'Test: Debug', 'Test: Coverage',
-            'Deploy', 'Deploy to Staging', 'Deploy to Production', 'Rollback',
-            'Open in Browser', 'Copy Path', 'Copy Relative Path', 'Reveal in Finder',
-            'Add to Workspace', 'Remove from Workspace', 'Duplicate Workspace',
-            'Color Theme', 'File Icon Theme', 'Product Icon Theme', 'High Contrast',
-            'Screen Reader Mode', 'Reduce Motion', 'Accessibility Help',
-          ].map((item, i) => `
-            <div style="padding: 6px 12px; background: rgba(255,255,255,${i % 2 === 0 ? '0.03' : '0.01'}); border-radius: 4px; cursor: pointer; transition: background 0.15s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='rgba(74,144,217,0.2)'" onmouseout="this.style.background='rgba(255,255,255,${i % 2 === 0 ? '0.03' : '0.01'})'">
-              <span>${item}</span>
-              <span style="color: #666; font-size: 10px;">${i % 5 === 0 ? '⌘' + String.fromCharCode(65 + (i % 26)) : ''}</span>
+        <!-- Config Section -->
+        <div style="background: #1a1a2e; border-radius: 6px; padding: 12px; border: 1px solid #2a2a4a;">
+          <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Configuration</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="font-size: 12px; color: #888; min-width: 80px;">Type:</label>
+              <select style="flex: 1; padding: 6px 8px; border: 1px solid #3a3a5a; border-radius: 4px; background: #2a2a4a; color: #fff; font-size: 12px;">
+                <option>Option A</option>
+                <option>Option B</option>
+                <option>Option C</option>
+              </select>
             </div>
-          `).join('')}
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="font-size: 12px; color: #888; min-width: 80px;">TTL (ms):</label>
+              <input type="number" value="5000" style="width: 80px; padding: 6px 8px; border: 1px solid #3a3a5a; border-radius: 4px; background: #2a2a4a; color: #fff; font-size: 12px;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="font-size: 12px; color: #888; min-width: 80px;">Weight:</label>
+              <input type="number" value="1" style="width: 80px; padding: 6px 8px; border: 1px solid #3a3a5a; border-radius: 4px; background: #2a2a4a; color: #fff; font-size: 12px;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="font-size: 12px; color: #888; min-width: 80px;">X:</label>
+              <input type="number" value="50" style="width: 60px; padding: 6px 8px; border: 1px solid #3a3a5a; border-radius: 4px; background: #2a2a4a; color: #fff; font-size: 12px;">
+              <select style="width: 50px; padding: 6px 4px; border: 1px solid #3a3a5a; border-radius: 4px; background: #2a2a4a; color: #fff; font-size: 12px;">
+                <option>%</option>
+                <option>px</option>
+              </select>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="font-size: 12px; color: #888; min-width: 80px;">Y:</label>
+              <input type="number" value="50" style="width: 60px; padding: 6px 8px; border: 1px solid #3a3a5a; border-radius: 4px; background: #2a2a4a; color: #fff; font-size: 12px;">
+              <select style="width: 50px; padding: 6px 4px; border: 1px solid #3a3a5a; border-radius: 4px; background: #2a2a4a; color: #fff; font-size: 12px;">
+                <option>%</option>
+                <option>px</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top: 12px;">
+            <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Tags</div>
+            <div style="display: flex; gap: 8px; align-items: stretch;">
+              <div style="flex: 1; display: flex; flex-direction: column;">
+                <div style="font-size: 10px; color: #666; margin-bottom: 4px;">Available</div>
+                <select multiple style="flex: 1; min-height: 60px; background: #1a1a2e; border: 1px solid #3a3a5a; border-radius: 4px; color: #fff; font-size: 11px; padding: 4px;">
+                  <option>Option A</option>
+                  <option>Option B</option>
+                  <option>Option C</option>
+                </select>
+              </div>
+              <div style="display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                <button style="padding: 4px 8px; background: #3a4a6a; border: 1px solid #4a5a7a; border-radius: 4px; color: #fff; cursor: pointer; font-size: 12px;">&gt;&gt;</button>
+                <button style="padding: 4px 8px; background: #3a4a6a; border: 1px solid #4a5a7a; border-radius: 4px; color: #fff; cursor: pointer; font-size: 12px;">&lt;&lt;</button>
+              </div>
+              <div style="flex: 1; display: flex; flex-direction: column;">
+                <div style="font-size: 10px; color: #666; margin-bottom: 4px;">Selected</div>
+                <select multiple style="flex: 1; min-height: 60px; background: #1a1a2e; border: 1px solid #3a3a5a; border-radius: 4px; color: #fff; font-size: 11px; padding: 4px;">
+                  <option>default</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <button style="margin-top: 12px; width: 100%; padding: 8px 12px; background: #3a4a6a; border: 1px solid #4a5a7a; border-radius: 4px; color: #fff; cursor: pointer; font-size: 12px;">Test Button</button>
+        </div>
+
+        <!-- Text Section -->
+        <div style="background: #1a1a2e; border-radius: 6px; padding: 12px; border: 1px solid #2a2a4a;">
+          <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Text Section</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="font-size: 12px; color: #888; min-width: 80px;">Text:</label>
+              <input type="text" value="HELLO" style="flex: 1; padding: 6px 8px; border: 1px solid #3a3a5a; border-radius: 4px; background: #2a2a4a; color: #fff; font-size: 12px;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="font-size: 12px; color: #888; min-width: 80px;">Font:</label>
+              <select style="flex: 1; padding: 6px 8px; border: 1px solid #3a3a5a; border-radius: 4px; background: #2a2a4a; color: #fff; font-size: 12px;">
+                <option>Arial</option>
+                <option>Helvetica</option>
+                <option>Impact</option>
+              </select>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="font-size: 12px; color: #888; min-width: 80px;">Size:</label>
+              <input type="number" value="60" style="width: 80px; padding: 6px 8px; border: 1px solid #3a3a5a; border-radius: 4px; background: #2a2a4a; color: #fff; font-size: 12px;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="font-size: 12px; color: #888; min-width: 80px;">Color:</label>
+              <input type="color" value="#ff0000" style="width: 60px; height: 28px; padding: 0; border: none; cursor: pointer;">
+            </div>
+          </div>
+          <button style="margin-top: 12px; width: 100%; padding: 8px 12px; background: #3a4a6a; border: 1px solid #4a5a7a; border-radius: 4px; color: #fff; cursor: pointer; font-size: 12px;">Test Button</button>
+        </div>
+
+        <!-- Actions Section -->
+        <div style="background: #1a1a2e; border-radius: 6px; padding: 12px; border: 1px solid #2a2a4a;">
+          <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Another Section</div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <select style="width: 100%; padding: 8px; border: 1px solid #3a3a5a; border-radius: 4px; background: #2a2a4a; color: #fff; font-size: 12px;">
+              <option>-- Select Option --</option>
+              <option>Option A</option>
+              <option>Option B</option>
+              <option>Option C</option>
+            </select>
+            <div style="display: flex; gap: 6px;">
+              <button style="flex: 1; padding: 8px 12px; background: #3a4a6a; border: 1px solid #4a5a7a; border-radius: 4px; color: #fff; cursor: pointer; font-size: 12px;">Test Button 1</button>
+              <button style="flex: 1; padding: 8px 12px; background: #4a3a5a; border: 1px solid #5a4a6a; border-radius: 4px; color: #fff; cursor: pointer; font-size: 12px;"> Test Button 2</button>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button style="flex: 1; padding: 8px 12px; background: #3a4a6a; border: 1px solid #4a5a7a; border-radius: 4px; color: #fff; cursor: pointer; font-size: 12px;">Test Button 3</button>
+              <button style="flex: 1; padding: 8px 12px; background: #4a3a5a; border: 1px solid #5a4a6a; border-radius: 4px; color: #fff; cursor: pointer; font-size: 12px;">Test Button 4</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toggles Section -->
+        <div style="background: #1a1a2e; border-radius: 6px; padding: 12px; border: 1px solid #2a2a4a;">
+          <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Effects</div>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <label style="position: relative; width: 44px; height: 24px;">
+                <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #4a90d9; transition: 0.3s; border-radius: 24px;"></span>
+              </label>
+              <span style="font-size: 13px;">Section 1</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <label style="position: relative; width: 44px; height: 24px;">
+                <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #2a2a4a; transition: 0.3s; border-radius: 24px;"></span>
+              </label>
+              <span style="font-size: 13px;">Section 2</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <label style="position: relative; width: 44px; height: 24px;">
+                <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #2a2a4a; transition: 0.3s; border-radius: 24px;"></span>
+              </label>
+              <span style="font-size: 13px;">Section 3</span>
+            </div>
+          </div>
         </div>
       `;
 
@@ -390,8 +472,8 @@ function initializeTestbed() {
   // Long menu panel for scroll testing
   // ============================================================
   manager.addPanel({
-    id: 'command-history',
-    title: 'Command History',
+    id: 'long-menu',
+    title: 'Long Menu',
     width: 280,
     startCollapsed: false,
     initialPosition: { x: (window.innerWidth - 280) / 2, y: 300 },

@@ -106,7 +106,6 @@
 
 /* Content Area */
 .blork-tabs-content {
-  display: flex;
   flex-direction: column;
   gap: var(--blork-tabs-content-gap, 12px);
   background: var(--blork-tabs-content-bg, #1a1a2e);
