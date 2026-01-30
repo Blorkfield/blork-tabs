@@ -2,6 +2,7 @@
   "name": "@blorkfield/blork-tabs",
   "version": "0.2.5",
   "description": "A framework-agnostic tab/panel management system with snapping and docking",
+  "packageManager": "pnpm@10.28.2",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -21,12 +22,13 @@
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean && cp styles.css dist/",
     "build:watch": "tsup src/index.ts --format cjs,esm --dts --watch",
-    "dev": "npm run build && npm run dev --prefix testbed",
-    "dev:install": "npm install --prefix testbed",
+    "dev": "pnpm build && pnpm -C testbed dev",
+    "dev:install": "pnpm -C testbed install",
     "lint": "eslint src/",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
   },
   "keywords": [
     "tabs",
