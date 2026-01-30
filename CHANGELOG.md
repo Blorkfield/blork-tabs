@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.2.4
+
+### Patch Changes
+
+- a8e3618: refactor: content length
+
 ## 0.2.3
 
 ### Patch Changes
