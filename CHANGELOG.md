@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.2.6
+
+### Patch Changes
+
+- f1f6d7a: refactor: to shared pipeline
+
 ## 0.2.5
 
 ### Patch Changes
