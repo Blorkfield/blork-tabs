@@ -12,6 +12,8 @@
  * --blork-tabs-header-bg: Header background color
  * --blork-tabs-header-color: Header text color
  * --blork-tabs-content-bg: Content background color
+ * --blork-tabs-content-gap: Gap between content items (default: 12px)
+ * --blork-tabs-content-max-height: Max height before scrolling (default: 70vh)
  * --blork-tabs-accent: Accent color for interactive elements
  */
 
@@ -104,9 +106,13 @@
 
 /* Content Area */
 .blork-tabs-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--blork-tabs-content-gap, 12px);
   background: var(--blork-tabs-content-bg, #1a1a2e);
   padding: 12px;
-  max-height: 400px;
+  max-height: var(--blork-tabs-content-max-height, 70vh);
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
