@@ -119,6 +119,16 @@
   display: none;
 }
 
+/* Auto-hide state */
+.blork-tabs-panel-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.blork-tabs-panel {
+  transition: opacity 0.3s ease;
+}
+
 /* Snap Preview */
 .blork-tabs-snap-preview {
   position: fixed;

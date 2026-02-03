@@ -25,6 +25,10 @@ export interface TabManagerConfig {
   initializeDefaultAnchors?: boolean;
   /** Custom CSS class prefix (default: 'blork-tabs') */
   classPrefix?: string;
+  /** Whether panels start hidden (default: false) */
+  startHidden?: boolean;
+  /** Milliseconds before auto-hiding on inactivity (undefined = no auto-hide) */
+  autoHideDelay?: number;
 }
 
 /**
@@ -39,6 +43,8 @@ export interface ResolvedTabManagerConfig {
   container: HTMLElement;
   initializeDefaultAnchors: boolean;
   classPrefix: string;
+  startHidden: boolean;
+  autoHideDelay: number | undefined;
 }
 
 /**
@@ -77,6 +83,10 @@ export interface PanelConfig {
   zIndex?: number;
   /** Z-index when dragging (default: 1002) */
   dragZIndex?: number;
+  /** Override global startHidden for this panel */
+  startHidden?: boolean;
+  /** Override global autoHideDelay for this panel (undefined = use global, 0 = disable) */
+  autoHideDelay?: number;
 }
 
 /**
@@ -130,6 +140,10 @@ export interface PanelState {
   snappedFrom: string | null;
   /** Panel configuration */
   config: PanelConfig;
+  /** Whether panel is currently hidden via auto-hide */
+  isHidden: boolean;
+  /** Resolved auto-hide delay for this panel */
+  resolvedAutoHideDelay: number | undefined;
 }
 
 /**
@@ -242,6 +256,10 @@ export interface TabManagerEvents {
   'panel:detached': PanelDetachedEvent;
   /** Fired when panel collapse state changes */
   'panel:collapse': PanelCollapseEvent;
+  /** Fired when a panel becomes visible (auto-hide) */
+  'panel:show': PanelShowEvent;
+  /** Fired when a panel becomes hidden (auto-hide) */
+  'panel:hide': PanelHideEvent;
 }
 
 export interface PanelAddedEvent {
@@ -293,6 +311,16 @@ export interface PanelCollapseEvent {
   isCollapsed: boolean;
 }
 
+export interface PanelShowEvent {
+  panel: PanelState;
+  trigger: 'activity' | 'api';
+}
+
+export interface PanelHideEvent {
+  panel: PanelState;
+  trigger: 'timeout' | 'api';
+}
+
 /**
  * Event listener function type
  */
@@ -317,4 +345,5 @@ export interface CSSClasses {
   anchorIndicatorVisible: string;
   anchorIndicatorActive: string;
   dragging: string;
+  panelHidden: string;
 }

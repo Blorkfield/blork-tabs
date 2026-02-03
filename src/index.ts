@@ -41,10 +41,14 @@ export { TabManager } from './TabManager';
 export { AnchorManager, getDefaultAnchorConfigs, createPresetAnchor } from './AnchorManager';
 export { DragManager } from './DragManager';
 export { SnapPreview } from './SnapPreview';
+export { AutoHideManager } from './AutoHideManager';
+export type { AutoHideCallbacks } from './AutoHideManager';
 export {
   createPanelElement,
   createPanelState,
   toggleCollapse,
+  showPanel,
+  hidePanel,
   setPanelPosition,
   getPanelPosition,
   getPanelDimensions,
@@ -98,6 +102,8 @@ export type {
   AnchorSnapEvent,
   PanelDetachedEvent,
   PanelCollapseEvent,
+  PanelShowEvent,
+  PanelHideEvent,
   EventListener,
 
   // CSS
