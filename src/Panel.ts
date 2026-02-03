@@ -95,7 +95,8 @@ export function createPanelElement(
  */
 export function createPanelState(
   config: PanelConfig,
-  classes: CSSClasses
+  classes: CSSClasses,
+  globalConfig?: { startHidden: boolean; autoHideDelay?: number }
 ): PanelState {
   let element: HTMLDivElement;
   let dragHandle: HTMLDivElement;
@@ -120,6 +121,17 @@ export function createPanelState(
     detachGrip = created.detachGrip;
   }
 
+  // Resolve auto-hide settings (per-panel overrides global)
+  const resolvedStartHidden = config.startHidden ?? globalConfig?.startHidden ?? false;
+  const resolvedAutoHideDelay = config.autoHideDelay !== undefined
+    ? (config.autoHideDelay === 0 ? undefined : config.autoHideDelay)
+    : globalConfig?.autoHideDelay;
+
+  // Apply initial hidden class if needed
+  if (resolvedStartHidden) {
+    element.classList.add(classes.panelHidden);
+  }
+
   return {
     id: config.id,
     element,
@@ -131,6 +143,8 @@ export function createPanelState(
     snappedTo: null,
     snappedFrom: null,
     config,
+    isHidden: resolvedStartHidden,
+    resolvedAutoHideDelay,
   };
 }
 
@@ -156,6 +170,24 @@ export function toggleCollapse(
   }
 
   return newState;
+}
+
+/**
+ * Show a hidden panel
+ */
+export function showPanel(state: PanelState, classes: CSSClasses): void {
+  if (!state.isHidden) return;
+  state.isHidden = false;
+  state.element.classList.remove(classes.panelHidden);
+}
+
+/**
+ * Hide a panel
+ */
+export function hidePanel(state: PanelState, classes: CSSClasses): void {
+  if (state.isHidden) return;
+  state.isHidden = true;
+  state.element.classList.add(classes.panelHidden);
 }
 
 /**

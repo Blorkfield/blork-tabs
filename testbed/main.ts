@@ -330,6 +330,8 @@ function initializeTestbed() {
   manager.on('snap:anchor', (e) => logEvent('snap:anchor', { panels: e.movingPanels.map(p => p.id), anchor: e.anchor.config.id }));
   manager.on('panel:detached', (e) => logEvent('panel:detached', { panel: e.panel.id }));
   manager.on('panel:collapse', (e) => logEvent('panel:collapse', { panel: e.panel.id, collapsed: e.isCollapsed }));
+  manager.on('panel:show', (e) => logEvent('panel:show', { panel: e.panel.id, trigger: e.trigger }));
+  manager.on('panel:hide', (e) => logEvent('panel:hide', { panel: e.panel.id, trigger: e.trigger }));
 
   // ============================================================
   // Group 1: Right side - IDE-like tools (pre-snapped chain)
@@ -480,7 +482,35 @@ function initializeTestbed() {
     content: createSampleContent('long-menu'),
   });
 
-  panelCounter = 11;
+  // ============================================================
+  // Auto-hide panel - starts hidden, shows on activity, hides after 5s
+  // ============================================================
+  manager.addPanel({
+    id: 'auto-hide-demo',
+    title: 'Auto-Hide Demo',
+    width: 250,
+    startCollapsed: false,
+    startHidden: true,
+    autoHideDelay: 5000,
+    initialPosition: { x: window.innerWidth - 300, y: 150 },
+    content: `
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <p style="font-size: 12px; color: #feca57;">
+          This panel demonstrates auto-hide behavior.
+        </p>
+        <ul style="font-size: 11px; color: #888; margin: 0; padding-left: 16px;">
+          <li>Starts hidden</li>
+          <li>Shows on mouse/keyboard activity</li>
+          <li>Hides after 5 seconds of inactivity</li>
+        </ul>
+        <p style="font-size: 11px; color: #666; margin-top: 8px;">
+          Move your mouse to keep it visible!
+        </p>
+      </div>
+    `,
+  });
+
+  panelCounter = 12;
 }
 
 function setupControls() {

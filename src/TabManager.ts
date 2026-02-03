@@ -24,6 +24,7 @@ import { getConnectedGroup, detachFromGroup, updateSnappedPositions, snapPanels 
 import { DragManager } from './DragManager';
 import { AnchorManager } from './AnchorManager';
 import { SnapPreview } from './SnapPreview';
+import { AutoHideManager } from './AutoHideManager';
 
 /**
  * Default configuration values
@@ -37,6 +38,8 @@ const DEFAULT_CONFIG: ResolvedTabManagerConfig = {
   container: document.body,
   initializeDefaultAnchors: true,
   classPrefix: 'blork-tabs',
+  startHidden: false,
+  autoHideDelay: undefined,
 };
 
 /**
@@ -57,6 +60,7 @@ function generateClasses(prefix: string): CSSClasses {
     anchorIndicatorVisible: `${prefix}-anchor-indicator-visible`,
     anchorIndicatorActive: `${prefix}-anchor-indicator-active`,
     dragging: `${prefix}-dragging`,
+    panelHidden: `${prefix}-panel-hidden`,
   };
 }
 
@@ -70,6 +74,7 @@ export class TabManager {
   private dragManager: DragManager;
   private anchorManager: AnchorManager;
   private snapPreview: SnapPreview;
+  private autoHideManager: AutoHideManager;
   private eventListeners: Map<string, Set<EventListener<unknown>>> = new Map();
 
   constructor(userConfig: TabManagerConfig = {}) {
@@ -100,6 +105,15 @@ export class TabManager {
       }
     );
 
+    this.autoHideManager = new AutoHideManager(
+      this.panels,
+      this.classes,
+      {
+        onShow: (panel, trigger) => this.emit('panel:show', { panel, trigger }),
+        onHide: (panel, trigger) => this.emit('panel:hide', { panel, trigger }),
+      }
+    );
+
     // Initialize default anchors if configured
     if (this.config.initializeDefaultAnchors) {
       this.anchorManager.addDefaultAnchors();
@@ -112,7 +126,10 @@ export class TabManager {
    * Add a new panel
    */
   addPanel(panelConfig: PanelConfig): PanelState {
-    const state = createPanelState(panelConfig, this.classes);
+    const state = createPanelState(panelConfig, this.classes, {
+      startHidden: this.config.startHidden,
+      autoHideDelay: this.config.autoHideDelay,
+    });
 
     // Add to container if new element
     if (!panelConfig.element && !this.config.container.contains(state.element)) {
@@ -129,6 +146,9 @@ export class TabManager {
     if (panelConfig.initialPosition) {
       setPanelPosition(state, panelConfig.initialPosition.x, panelConfig.initialPosition.y);
     }
+
+    // Initialize auto-hide state
+    this.autoHideManager.initializePanel(state);
 
     this.emit('panel:added', { panel: state });
 
@@ -166,6 +186,9 @@ export class TabManager {
   removePanel(id: string): boolean {
     const panel = this.panels.get(id);
     if (!panel) return false;
+
+    // Clean up auto-hide timer
+    this.autoHideManager.cleanupPanel(id);
 
     // Detach from any snap chain
     detachFromGroup(panel, this.panels);
@@ -304,6 +327,35 @@ export class TabManager {
    */
   getAnchors(): AnchorState[] {
     return this.anchorManager.getAnchors();
+  }
+
+  // ==================== Auto-Hide ====================
+
+  /**
+   * Show a hidden panel
+   */
+  show(panelId: string): boolean {
+    const panel = this.panels.get(panelId);
+    if (!panel) return false;
+    this.autoHideManager.show(panel, 'api');
+    return true;
+  }
+
+  /**
+   * Hide a panel
+   */
+  hide(panelId: string): boolean {
+    const panel = this.panels.get(panelId);
+    if (!panel) return false;
+    this.autoHideManager.hide(panel, 'api');
+    return true;
+  }
+
+  /**
+   * Check if a panel is hidden
+   */
+  isHidden(panelId: string): boolean {
+    return this.panels.get(panelId)?.isHidden ?? false;
   }
 
   // ==================== Drag Callbacks ====================
@@ -493,6 +545,7 @@ export class TabManager {
     this.dragManager.destroy();
     this.anchorManager.destroy();
     this.snapPreview.destroy();
+    this.autoHideManager.destroy();
 
     // Remove panels we created
     for (const panel of this.panels.values()) {
