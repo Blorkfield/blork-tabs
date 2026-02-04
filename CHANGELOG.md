@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.3.1
+
+### Patch Changes
+
+- 35ec05b: fix: auto hide
+
 ## 0.3.0
 
 ### Minor Changes
