@@ -19,6 +19,7 @@ export class AutoHideManager {
   private classes: CSSClasses;
   private callbacks: AutoHideCallbacks;
   private hideTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
+  private pausedPanels: Set<string> = new Set();
   private boundActivityHandler: () => void;
   private listenersAttached = false;
 
@@ -49,6 +50,9 @@ export class AutoHideManager {
    */
   private handleActivity(): void {
     for (const panel of this.panels.values()) {
+      // Skip paused panels - they handle their own timing
+      if (this.pausedPanels.has(panel.id)) continue;
+
       // Only process panels that participate in auto-hide
       if (panel.resolvedAutoHideDelay !== undefined || panel.isHidden) {
         this.show(panel, 'activity');
@@ -62,7 +66,7 @@ export class AutoHideManager {
   /**
    * Schedule a panel to hide after its delay
    */
-  private scheduleHide(panel: PanelState): void {
+  scheduleHide(panel: PanelState): void {
     this.clearTimer(panel.id);
     if (panel.resolvedAutoHideDelay === undefined) return;
 
@@ -75,11 +79,30 @@ export class AutoHideManager {
   /**
    * Clear hide timer for a panel
    */
-  private clearTimer(panelId: string): void {
+  clearTimer(panelId: string): void {
     const timer = this.hideTimers.get(panelId);
     if (timer) {
       clearTimeout(timer);
       this.hideTimers.delete(panelId);
+    }
+  }
+
+  /**
+   * Pause auto-hide timer for a panel (e.g., during debug hover)
+   */
+  pauseTimer(panelId: string): void {
+    this.clearTimer(panelId);
+    this.pausedPanels.add(panelId);
+  }
+
+  /**
+   * Resume auto-hide timer for a panel
+   */
+  resumeTimer(panelId: string): void {
+    this.pausedPanels.delete(panelId);
+    const panel = this.panels.get(panelId);
+    if (panel && panel.resolvedAutoHideDelay !== undefined) {
+      this.scheduleHide(panel);
     }
   }
 

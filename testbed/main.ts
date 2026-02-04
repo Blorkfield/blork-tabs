@@ -1,5 +1,5 @@
 // Import exactly as npm users would
-import { TabManager, DebugPanel } from '@blorkfield/blork-tabs';
+import { TabManager, DebugPanel, DebugLog } from '@blorkfield/blork-tabs';
 import '@blorkfield/blork-tabs/styles.css';
 
 // ============================================================
@@ -9,19 +9,26 @@ import '@blorkfield/blork-tabs/styles.css';
 
 let manager: TabManager;
 let debug: DebugPanel;
+let embeddedDebug: DebugLog;
 let panelCounter = 0;
 
 function logEvent(eventName: string, data: unknown) {
-  // Use the debug panel for logging
+  const dataObj = typeof data === 'object' && data !== null
+    ? JSON.parse(JSON.stringify(data, (_, v) => {
+        if (v instanceof HTMLElement) return `[${v.tagName}]`;
+        if (v instanceof Map) return Object.fromEntries(v);
+        return v;
+      }))
+    : { value: data };
+
+  // Log to standalone debug panel
   if (debug) {
-    const dataObj = typeof data === 'object' && data !== null
-      ? JSON.parse(JSON.stringify(data, (_, v) => {
-          if (v instanceof HTMLElement) return `[${v.tagName}]`;
-          if (v instanceof Map) return Object.fromEntries(v);
-          return v;
-        }))
-      : { value: data };
     debug.log(eventName, dataObj);
+  }
+
+  // Also log to embedded debug log
+  if (embeddedDebug) {
+    embeddedDebug.log(eventName, dataObj);
   }
 }
 
@@ -480,15 +487,28 @@ function initializeTestbed() {
   });
 
   // ============================================================
-  // Long menu panel for scroll testing
+  // Long menu panel for scroll testing + embedded debug log demo
   // ============================================================
-  manager.addPanel({
+  const longMenuPanel = manager.addPanel({
     id: 'long-menu',
     title: 'Long Menu',
     width: 280,
     startCollapsed: false,
     initialPosition: { x: (window.innerWidth - 280) / 2, y: 300 },
     content: createSampleContent('long-menu'),
+  });
+
+  // Add embedded debug log section to the long menu panel
+  const embeddedLogSection = document.createElement('div');
+  embeddedLogSection.style.cssText = 'background: #1a1a2e; border-radius: 6px; padding: 12px; border: 1px solid #2a2a4a; margin-top: 12px;';
+  embeddedLogSection.innerHTML = '<div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">Embedded Event Log</div>';
+  longMenuPanel.contentWrapper.appendChild(embeddedLogSection);
+
+  // Create embedded debug log with hover-to-enlarge
+  embeddedDebug = manager.createDebugLog(embeddedLogSection, {
+    maxEntries: 20,
+    showTimestamps: true,
+    hoverDelay: 3000,  // Faster hover delay for demo
   });
 
   // ============================================================

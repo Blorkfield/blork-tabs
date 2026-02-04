@@ -42,7 +42,7 @@ export { AnchorManager, getDefaultAnchorConfigs, createPresetAnchor } from './An
 export { DragManager } from './DragManager';
 export { SnapPreview } from './SnapPreview';
 export { AutoHideManager } from './AutoHideManager';
-export { createDebugPanelContent, createDebugPanelInterface } from './DebugPanel';
+export { createDebugPanelContent, createDebugPanelInterface, createDebugLog, setupHoverEnlarge } from './DebugPanel';
 export type { AutoHideCallbacks } from './AutoHideManager';
 export {
   createPanelElement,
@@ -113,5 +113,7 @@ export type {
 
   // Debug Panel
   DebugPanel,
+  DebugLog,
+  DebugLogConfig,
   DebugLogLevel,
 } from './types';
