@@ -1,6 +1,6 @@
 {
   "name": "@blorkfield/blork-tabs",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "description": "A framework-agnostic tab/panel management system with snapping and docking",
   "packageManager": "pnpm@10.28.2",
   "type": "module",

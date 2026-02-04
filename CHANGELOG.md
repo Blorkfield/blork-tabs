@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.3.0
+
+### Minor Changes
+
+- 1369c82: feat: auto hidden
+
 ## 0.2.6
 
 ### Patch Changes
