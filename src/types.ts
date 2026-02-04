@@ -370,6 +370,20 @@ export interface DebugPanelConfig extends Omit<PanelConfig, 'content'> {
   maxEntries?: number;
   /** Show timestamps on entries (default: false) */
   showTimestamps?: boolean;
+  /** Milliseconds to hover before enlarging (default: 5000, 0 = disable) */
+  hoverDelay?: number;
+}
+
+/**
+ * Configuration for creating an embeddable debug log
+ */
+export interface DebugLogConfig {
+  /** Maximum log entries before oldest are removed (default: 50) */
+  maxEntries?: number;
+  /** Show timestamps on entries (default: false) */
+  showTimestamps?: boolean;
+  /** Milliseconds to hover before enlarging (default: 5000, 0 = disable) */
+  hoverDelay?: number;
 }
 
 /**
@@ -393,4 +407,20 @@ export interface DebugPanel {
   clear(): void;
   /** The underlying panel state */
   panel: PanelState;
+}
+
+/**
+ * Interface for an embeddable debug log (without panel)
+ */
+export interface DebugLog {
+  /** Log an event (alias for info) */
+  log(eventName: string, data?: Record<string, unknown>): void;
+  /** Log an info event (blue) */
+  info(eventName: string, data?: Record<string, unknown>): void;
+  /** Log a warning event (yellow) */
+  warn(eventName: string, data?: Record<string, unknown>): void;
+  /** Log an error event (red) */
+  error(eventName: string, data?: Record<string, unknown>): void;
+  /** Clear all log entries */
+  clear(): void;
 }

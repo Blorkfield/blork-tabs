@@ -270,70 +270,77 @@
   opacity: 1;
 }
 
-/* Hide close button when NOT enlarged (only show when zoomed) */
-.blork-tabs-debug-panel .blork-tabs-debug-clear-btn {
-  display: none;
+/* Debug log hover effects - applied to .blork-tabs-debug-log */
+.blork-tabs-debug-log.blork-tabs-debug-panel {
+  transition: border-color 0.3s ease;
+  position: relative;
 }
 
-.blork-tabs-debug-panel-enlarged .blork-tabs-debug-clear-btn {
-  display: flex;
-}
-
-/* Debug panel hover effects */
-.blork-tabs-debug-panel {
-  transition: border-color 0.3s ease, opacity 0.3s ease;
-}
-
-.blork-tabs-debug-panel:hover {
+.blork-tabs-debug-log.blork-tabs-debug-panel:hover {
   border-color: var(--blork-tabs-accent, #4a90d9);
   box-shadow: 0 0 12px rgba(74, 144, 217, 0.3);
 }
 
-/* Enlarged state after hover timeout - 75% of screen, modal-level z-index */
-.blork-tabs-debug-panel-enlarged {
+/* No hover effect when already enlarged */
+.blork-tabs-debug-log.blork-tabs-debug-panel.blork-tabs-debug-panel-enlarged:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+/* Enlarged state for debug log - applies to .blork-tabs-debug-log directly */
+.blork-tabs-debug-log.blork-tabs-debug-panel-enlarged {
   position: fixed !important;
   width: 75vw !important;
   left: 12.5vw !important;
   top: 12.5vh !important;
+  max-height: 75vh !important;
+  min-height: 75vh !important;
   z-index: 100000 !important;
-}
-
-/* Make content area fill the enlarged panel */
-.blork-tabs-debug-panel-enlarged .blork-tabs-content {
-  max-height: 70vh !important;
-  padding: 16px;
-}
-
-.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log {
-  max-height: 65vh !important;
-  min-height: 65vh !important;
   font-size: 22px !important;
   line-height: 1.6;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.95) !important;
 }
 
-.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-entry {
+.blork-tabs-debug-log.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-entry {
   padding: 10px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-name {
+.blork-tabs-debug-log.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-name {
   font-size: 22px;
 }
 
-.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-data {
+.blork-tabs-debug-log.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-data {
   font-size: 20px;
 }
 
-.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-timestamp {
+.blork-tabs-debug-log.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-timestamp {
   font-size: 20px !important;
 }
 
-.blork-tabs-debug-panel-enlarged .blork-tabs-header {
-  padding: 14px 18px;
+/* Close button inside enlarged log */
+.blork-tabs-debug-log .blork-tabs-debug-clear-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: none;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  z-index: 1;
 }
 
-.blork-tabs-debug-panel-enlarged .blork-tabs-title {
-  font-size: 20px;
+.blork-tabs-debug-log.blork-tabs-debug-panel-enlarged {
+  position: fixed !important;
+}
+
+.blork-tabs-debug-log.blork-tabs-debug-panel-enlarged .blork-tabs-debug-clear-btn {
+  display: flex;
 }
 
 /* Backdrop when enlarged */
@@ -344,7 +351,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 9999;
+  z-index: 99999;
 }
 
 /* Debug log scrollbar styling */

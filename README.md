@@ -312,11 +312,13 @@ debug.clear();
 
 The debug panel has a special "focus mode" for reading logs:
 
-1. **Hover for 5 seconds** → Panel enlarges to 75% of screen with doubled text size
+1. **Hover for configurable delay** → Panel enlarges to 75% of screen with doubled text size (default: 5 seconds, configurable via `hoverDelay`)
 2. **Mouse can move freely** → Panel stays enlarged, won't close on mouse leave
 3. **Click × or backdrop** → Returns to normal size
 
-The × button is only visible when enlarged.
+The × button is only visible when enlarged. Set `hoverDelay: 0` to disable the enlarge feature entirely.
+
+**Auto-hide interaction:** When hovering a debug panel that has auto-hide enabled, the auto-hide timer is paused so the panel won't disappear before the hover-to-enlarge triggers.
 
 ### Configuration Options
 
@@ -324,6 +326,7 @@ The × button is only visible when enlarged.
 |--------|------|---------|-------------|
 | `maxEntries` | `number` | `50` | Maximum log entries before oldest are removed |
 | `showTimestamps` | `boolean` | `false` | Show timestamps on each entry |
+| `hoverDelay` | `number` | `5000` | Milliseconds to hover before enlarging (0 = disable) |
 
 Plus all standard `PanelConfig` options (`id`, `title`, `width`, `initialPosition`, `startCollapsed`, etc.)
 
@@ -333,6 +336,41 @@ Plus all standard `PanelConfig` options (`id`, `title`, `width`, `initialPositio
 // The debug panel interface includes access to the panel state
 debug.panel;  // PanelState - for advanced manipulation
 ```
+
+### Embeddable Debug Log
+
+You can embed a debug log inside any panel or container element using `createDebugLog()`:
+
+```typescript
+const manager = new TabManager();
+
+// Create a panel with custom content
+const panel = manager.addPanel({
+  id: 'my-panel',
+  title: 'My Panel',
+  content: '<div id="my-content">Some content</div>',
+});
+
+// Add a debug log section to the panel
+const logSection = document.createElement('div');
+panel.contentWrapper.appendChild(logSection);
+
+// Create the embedded debug log (shares hover-to-enlarge with standalone panels)
+const embeddedLog = manager.createDebugLog(logSection, {
+  maxEntries: 20,
+  showTimestamps: true,
+  hoverDelay: 3000,  // 3 second hover delay (0 to disable, default: 5000)
+});
+
+// Use it like a regular debug panel
+embeddedLog.log('event', { data: 'value' });
+embeddedLog.info('status', { connected: true });
+embeddedLog.warn('warning', { message: 'Low memory' });
+embeddedLog.error('error', { code: 500 });
+embeddedLog.clear();
+```
+
+The embedded log supports the same hover-to-enlarge behavior as the standalone debug panel.
 
 ## CSS Customization
 

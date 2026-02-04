@@ -20,8 +20,10 @@ import type {
   Position,
   DebugPanelConfig,
   DebugPanel,
+  DebugLogConfig,
+  DebugLog,
 } from './types';
-import { createDebugPanelContent, createDebugPanelInterface, DebugPanelElements } from './DebugPanel';
+import { createDebugPanelContent, createDebugPanelInterface, createDebugLog, setupHoverEnlarge, DebugPanelElements } from './DebugPanel';
 import { createPanelState, toggleCollapse, setPanelPosition } from './Panel';
 import { getConnectedGroup, detachFromGroup, updateSnappedPositions, snapPanels } from './SnapChain';
 import { DragManager } from './DragManager';
@@ -253,80 +255,45 @@ export class TabManager {
 
     const state = this.addPanel(panelConfig);
 
-    // Add debug panel class for hover effects
-    state.element.classList.add(this.classes.debugPanel);
-
-    // Add close button (×) to header - used to close enlarged view
-    const closeBtn = document.createElement('button');
-    closeBtn.className = this.classes.debugClearButton;
-    closeBtn.textContent = '×';
-    closeBtn.title = 'Close enlarged view';
-    if (state.collapseButton) {
-      state.collapseButton.parentElement?.insertBefore(closeBtn, state.collapseButton);
-    }
-    elements.clearButton = closeBtn;
-
     this.debugPanelElements.set(state.id, elements);
 
     const debugPanel = createDebugPanelInterface(state, elements, config, this.classes);
 
-    // Set up hover-to-enlarge behavior (5 second delay)
-    let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
-    let isEnlarged = false;
-    let backdrop: HTMLDivElement | null = null;
-    const enlargedClass = this.classes.debugPanelEnlarged;
-    const backdropClass = this.classes.debugBackdrop;
-
-    const closeEnlarged = () => {
-      if (!isEnlarged) return;
-      isEnlarged = false;
-      state.element.classList.remove(enlargedClass);
-      if (backdrop) {
-        backdrop.remove();
-        backdrop = null;
-      }
-    };
-
-    const openEnlarged = () => {
-      if (isEnlarged) return;
-      isEnlarged = true;
-
-      // Create backdrop
-      backdrop = document.createElement('div');
-      backdrop.className = backdropClass;
-      this.config.container.appendChild(backdrop);
-
-      // Click backdrop to close
-      backdrop.addEventListener('click', closeEnlarged);
-
-      // Add enlarged class
-      state.element.classList.add(enlargedClass);
-    };
-
-    // Hover to start enlarge timer (only when not already enlarged)
-    state.element.addEventListener('mouseenter', () => {
-      if (isEnlarged) return;
-      hoverTimeout = setTimeout(() => {
-        openEnlarged();
-      }, 5000);
-    });
-
-    // Cancel timer if mouse leaves before 5 seconds (but don't close if already enlarged)
-    state.element.addEventListener('mouseleave', () => {
-      if (hoverTimeout) {
-        clearTimeout(hoverTimeout);
-        hoverTimeout = null;
-      }
-      // Don't close on mouseleave - only × or backdrop click closes
-    });
-
-    // × button closes enlarged view
-    closeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeEnlarged();
-    });
+    // Set up hover-to-enlarge behavior on the log container (shared with embedded logs)
+    const hoverDelay = config.hoverDelay ?? 5000;
+    if (hoverDelay > 0) {
+      setupHoverEnlarge({
+        logContainer: elements.logContainer,
+        hoverDelay,
+        backdropContainer: this.config.container,
+        classes: this.classes,
+        onHoverStart: () => this.autoHideManager.pauseTimer(state.id),
+        onHoverEnd: () => this.autoHideManager.resumeTimer(state.id),
+        onClose: () => this.autoHideManager.resumeTimer(state.id),
+      });
+    }
 
     return debugPanel;
+  }
+
+  /**
+   * Create an embeddable debug log in any container element
+   */
+  createDebugLog(container: HTMLElement, config: DebugLogConfig = {}): DebugLog {
+    const { debugLog, logContainer } = createDebugLog(container, config, this.classes);
+
+    // Set up hover-to-enlarge behavior using shared helper (same as standalone panel)
+    const hoverDelay = config.hoverDelay ?? 5000;
+    if (hoverDelay > 0) {
+      setupHoverEnlarge({
+        logContainer,
+        hoverDelay,
+        backdropContainer: this.config.container,
+        classes: this.classes,
+      });
+    }
+
+    return debugLog;
   }
 
   /**
