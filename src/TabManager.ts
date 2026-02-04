@@ -18,12 +18,16 @@ import type {
   AnchorSnapResult,
   DragState,
   Position,
+  DebugPanelConfig,
+  DebugPanel,
 } from './types';
+import { createDebugPanelContent, createDebugPanelInterface, DebugPanelElements } from './DebugPanel';
 import { createPanelState, toggleCollapse, setPanelPosition } from './Panel';
 import { getConnectedGroup, detachFromGroup, updateSnappedPositions, snapPanels } from './SnapChain';
 import { DragManager } from './DragManager';
 import { AnchorManager } from './AnchorManager';
 import { SnapPreview } from './SnapPreview';
+import { AutoHideManager } from './AutoHideManager';
 
 /**
  * Default configuration values
@@ -37,6 +41,8 @@ const DEFAULT_CONFIG: ResolvedTabManagerConfig = {
   container: document.body,
   initializeDefaultAnchors: true,
   classPrefix: 'blork-tabs',
+  startHidden: false,
+  autoHideDelay: undefined,
 };
 
 /**
@@ -57,6 +63,19 @@ function generateClasses(prefix: string): CSSClasses {
     anchorIndicatorVisible: `${prefix}-anchor-indicator-visible`,
     anchorIndicatorActive: `${prefix}-anchor-indicator-active`,
     dragging: `${prefix}-dragging`,
+    panelHidden: `${prefix}-panel-hidden`,
+    debugLog: `${prefix}-debug-log`,
+    debugLogEntry: `${prefix}-debug-log-entry`,
+    debugLogEntryInfo: `${prefix}-debug-log-entry-info`,
+    debugLogEntryWarn: `${prefix}-debug-log-entry-warn`,
+    debugLogEntryError: `${prefix}-debug-log-entry-error`,
+    debugLogName: `${prefix}-debug-log-name`,
+    debugLogData: `${prefix}-debug-log-data`,
+    debugLogTimestamp: `${prefix}-debug-log-timestamp`,
+    debugClearButton: `${prefix}-debug-clear-btn`,
+    debugPanel: `${prefix}-debug-panel`,
+    debugPanelEnlarged: `${prefix}-debug-panel-enlarged`,
+    debugBackdrop: `${prefix}-debug-backdrop`,
   };
 }
 
@@ -70,7 +89,9 @@ export class TabManager {
   private dragManager: DragManager;
   private anchorManager: AnchorManager;
   private snapPreview: SnapPreview;
+  private autoHideManager: AutoHideManager;
   private eventListeners: Map<string, Set<EventListener<unknown>>> = new Map();
+  private debugPanelElements: Map<string, DebugPanelElements> = new Map();
 
   constructor(userConfig: TabManagerConfig = {}) {
     // Merge user config with defaults
@@ -100,6 +121,15 @@ export class TabManager {
       }
     );
 
+    this.autoHideManager = new AutoHideManager(
+      this.panels,
+      this.classes,
+      {
+        onShow: (panel, trigger) => this.emit('panel:show', { panel, trigger }),
+        onHide: (panel, trigger) => this.emit('panel:hide', { panel, trigger }),
+      }
+    );
+
     // Initialize default anchors if configured
     if (this.config.initializeDefaultAnchors) {
       this.anchorManager.addDefaultAnchors();
@@ -112,7 +142,10 @@ export class TabManager {
    * Add a new panel
    */
   addPanel(panelConfig: PanelConfig): PanelState {
-    const state = createPanelState(panelConfig, this.classes);
+    const state = createPanelState(panelConfig, this.classes, {
+      startHidden: this.config.startHidden,
+      autoHideDelay: this.config.autoHideDelay,
+    });
 
     // Add to container if new element
     if (!panelConfig.element && !this.config.container.contains(state.element)) {
@@ -129,6 +162,9 @@ export class TabManager {
     if (panelConfig.initialPosition) {
       setPanelPosition(state, panelConfig.initialPosition.x, panelConfig.initialPosition.y);
     }
+
+    // Initialize auto-hide state
+    this.autoHideManager.initializePanel(state);
 
     this.emit('panel:added', { panel: state });
 
@@ -167,6 +203,12 @@ export class TabManager {
     const panel = this.panels.get(id);
     if (!panel) return false;
 
+    // Clean up auto-hide timer
+    this.autoHideManager.cleanupPanel(id);
+
+    // Clean up debug panel elements
+    this.debugPanelElements.delete(id);
+
     // Detach from any snap chain
     detachFromGroup(panel, this.panels);
 
@@ -193,6 +235,98 @@ export class TabManager {
    */
   getAllPanels(): PanelState[] {
     return Array.from(this.panels.values());
+  }
+
+  /**
+   * Add a debug panel with built-in logging functionality
+   */
+  addDebugPanel(config: DebugPanelConfig): DebugPanel {
+    const { content, elements } = createDebugPanelContent(config, this.classes);
+
+    // Create panel with generated content
+    const panelConfig: PanelConfig = {
+      ...config,
+      title: config.title ?? 'Debug',
+      content,
+      startCollapsed: config.startCollapsed ?? true,
+    };
+
+    const state = this.addPanel(panelConfig);
+
+    // Add debug panel class for hover effects
+    state.element.classList.add(this.classes.debugPanel);
+
+    // Add close button (×) to header - used to close enlarged view
+    const closeBtn = document.createElement('button');
+    closeBtn.className = this.classes.debugClearButton;
+    closeBtn.textContent = '×';
+    closeBtn.title = 'Close enlarged view';
+    if (state.collapseButton) {
+      state.collapseButton.parentElement?.insertBefore(closeBtn, state.collapseButton);
+    }
+    elements.clearButton = closeBtn;
+
+    this.debugPanelElements.set(state.id, elements);
+
+    const debugPanel = createDebugPanelInterface(state, elements, config, this.classes);
+
+    // Set up hover-to-enlarge behavior (5 second delay)
+    let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
+    let isEnlarged = false;
+    let backdrop: HTMLDivElement | null = null;
+    const enlargedClass = this.classes.debugPanelEnlarged;
+    const backdropClass = this.classes.debugBackdrop;
+
+    const closeEnlarged = () => {
+      if (!isEnlarged) return;
+      isEnlarged = false;
+      state.element.classList.remove(enlargedClass);
+      if (backdrop) {
+        backdrop.remove();
+        backdrop = null;
+      }
+    };
+
+    const openEnlarged = () => {
+      if (isEnlarged) return;
+      isEnlarged = true;
+
+      // Create backdrop
+      backdrop = document.createElement('div');
+      backdrop.className = backdropClass;
+      this.config.container.appendChild(backdrop);
+
+      // Click backdrop to close
+      backdrop.addEventListener('click', closeEnlarged);
+
+      // Add enlarged class
+      state.element.classList.add(enlargedClass);
+    };
+
+    // Hover to start enlarge timer (only when not already enlarged)
+    state.element.addEventListener('mouseenter', () => {
+      if (isEnlarged) return;
+      hoverTimeout = setTimeout(() => {
+        openEnlarged();
+      }, 5000);
+    });
+
+    // Cancel timer if mouse leaves before 5 seconds (but don't close if already enlarged)
+    state.element.addEventListener('mouseleave', () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+        hoverTimeout = null;
+      }
+      // Don't close on mouseleave - only × or backdrop click closes
+    });
+
+    // × button closes enlarged view
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeEnlarged();
+    });
+
+    return debugPanel;
   }
 
   /**
@@ -304,6 +438,35 @@ export class TabManager {
    */
   getAnchors(): AnchorState[] {
     return this.anchorManager.getAnchors();
+  }
+
+  // ==================== Auto-Hide ====================
+
+  /**
+   * Show a hidden panel
+   */
+  show(panelId: string): boolean {
+    const panel = this.panels.get(panelId);
+    if (!panel) return false;
+    this.autoHideManager.show(panel, 'api');
+    return true;
+  }
+
+  /**
+   * Hide a panel
+   */
+  hide(panelId: string): boolean {
+    const panel = this.panels.get(panelId);
+    if (!panel) return false;
+    this.autoHideManager.hide(panel, 'api');
+    return true;
+  }
+
+  /**
+   * Check if a panel is hidden
+   */
+  isHidden(panelId: string): boolean {
+    return this.panels.get(panelId)?.isHidden ?? false;
   }
 
   // ==================== Drag Callbacks ====================
@@ -493,6 +656,7 @@ export class TabManager {
     this.dragManager.destroy();
     this.anchorManager.destroy();
     this.snapPreview.destroy();
+    this.autoHideManager.destroy();
 
     // Remove panels we created
     for (const panel of this.panels.values()) {
@@ -503,5 +667,6 @@ export class TabManager {
 
     this.panels.clear();
     this.eventListeners.clear();
+    this.debugPanelElements.clear();
   }
 }

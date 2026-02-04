@@ -1,5 +1,5 @@
 // Import exactly as npm users would
-import { TabManager } from '@blorkfield/blork-tabs';
+import { TabManager, DebugPanel } from '@blorkfield/blork-tabs';
 import '@blorkfield/blork-tabs/styles.css';
 
 // ============================================================
@@ -8,25 +8,20 @@ import '@blorkfield/blork-tabs/styles.css';
 // ============================================================
 
 let manager: TabManager;
+let debug: DebugPanel;
 let panelCounter = 0;
 
 function logEvent(eventName: string, data: unknown) {
-  const log = document.getElementById('event-log');
-  if (!log) return;
-
-  const entry = document.createElement('div');
-  entry.className = 'event-log-entry';
-  entry.innerHTML = `<span class="event-name">${eventName}</span>: ${JSON.stringify(data, (_, v) => {
-    if (v instanceof HTMLElement) return `[${v.tagName}]`;
-    if (v instanceof Map) return Object.fromEntries(v);
-    return v;
-  }, 0).slice(0, 100)}`;
-  log.appendChild(entry);
-  log.scrollTop = log.scrollHeight;
-
-  // Limit log entries
-  while (log.children.length > 51) {
-    log.removeChild(log.children[1]);
+  // Use the debug panel for logging
+  if (debug) {
+    const dataObj = typeof data === 'object' && data !== null
+      ? JSON.parse(JSON.stringify(data, (_, v) => {
+          if (v instanceof HTMLElement) return `[${v.tagName}]`;
+          if (v instanceof Map) return Object.fromEntries(v);
+          return v;
+        }))
+      : { value: data };
+    debug.log(eventName, dataObj);
   }
 }
 
@@ -321,6 +316,20 @@ function initializeTestbed() {
     initializeDefaultAnchors: true,
   });
 
+  // ============================================================
+  // Debug Panel - In-browser event log using the new DebugPanel API
+  // Hover for 5 seconds to enlarge, click × or backdrop to close
+  // ============================================================
+  debug = manager.addDebugPanel({
+    id: 'debug',
+    title: 'Event Log',
+    width: 400,
+    maxEntries: 200,  // More entries to fill enlarged view
+    showTimestamps: true,
+    startCollapsed: false,
+    initialPosition: { x: 16, y: window.innerHeight - 300 },
+  });
+
   // Subscribe to all events for logging
   manager.on('panel:added', (e) => logEvent('panel:added', { id: e.panel.id }));
   manager.on('panel:removed', (e) => logEvent('panel:removed', e));
@@ -330,6 +339,8 @@ function initializeTestbed() {
   manager.on('snap:anchor', (e) => logEvent('snap:anchor', { panels: e.movingPanels.map(p => p.id), anchor: e.anchor.config.id }));
   manager.on('panel:detached', (e) => logEvent('panel:detached', { panel: e.panel.id }));
   manager.on('panel:collapse', (e) => logEvent('panel:collapse', { panel: e.panel.id, collapsed: e.isCollapsed }));
+  manager.on('panel:show', (e) => logEvent('panel:show', { panel: e.panel.id, trigger: e.trigger }));
+  manager.on('panel:hide', (e) => logEvent('panel:hide', { panel: e.panel.id, trigger: e.trigger }));
 
   // ============================================================
   // Group 1: Right side - IDE-like tools (pre-snapped chain)
@@ -480,14 +491,41 @@ function initializeTestbed() {
     content: createSampleContent('long-menu'),
   });
 
-  panelCounter = 11;
+  // ============================================================
+  // Auto-hide panel - starts hidden, shows on activity, hides after 5s
+  // ============================================================
+  manager.addPanel({
+    id: 'auto-hide-demo',
+    title: 'Auto-Hide Demo',
+    width: 250,
+    startCollapsed: false,
+    startHidden: true,
+    autoHideDelay: 5000,
+    initialPosition: { x: window.innerWidth - 300, y: 150 },
+    content: `
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <p style="font-size: 12px; color: #feca57;">
+          This panel demonstrates auto-hide behavior.
+        </p>
+        <ul style="font-size: 11px; color: #888; margin: 0; padding-left: 16px;">
+          <li>Starts hidden</li>
+          <li>Shows on mouse/keyboard activity</li>
+          <li>Hides after 5 seconds of inactivity</li>
+        </ul>
+        <p style="font-size: 11px; color: #666; margin-top: 8px;">
+          Move your mouse to keep it visible!
+        </p>
+      </div>
+    `,
+  });
+
+  panelCounter = 12;
 }
 
 function setupControls() {
   // Reset button
   document.getElementById('btn-reset')?.addEventListener('click', () => {
     manager.destroy();
-    document.getElementById('event-log')!.innerHTML = '<div class="event-log-title">Event Log</div>';
     initializeTestbed();
     logEvent('system', 'Reset complete');
   });
@@ -554,5 +592,10 @@ function setupControls() {
 document.addEventListener('DOMContentLoaded', () => {
   initializeTestbed();
   setupControls();
-  logEvent('system', 'Testbed initialized');
+
+  // Demo the different log levels
+  debug.info('system', { status: 'initialized', version: '1.0.0' });
+  debug.log('config', { panels: 12, anchors: 8 });
+  debug.warn('performance', { message: 'Many panels active' });
+  debug.error('demo', { code: 500, message: 'Example error entry' });
 });

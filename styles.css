@@ -119,6 +119,16 @@
   display: none;
 }
 
+/* Auto-hide state */
+.blork-tabs-panel-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.blork-tabs-panel {
+  transition: opacity 0.3s ease;
+}
+
 /* Snap Preview */
 .blork-tabs-snap-preview {
   position: fixed;
@@ -188,4 +198,169 @@
 /* Utility: Disable transitions during drag for better performance */
 .blork-tabs-dragging .blork-tabs-panel {
   transition: none !important;
+}
+
+/* Debug Panel Log */
+.blork-tabs-debug-log {
+  min-height: 100px;
+  max-height: 200px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 8px;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 11px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.blork-tabs-debug-log-entry {
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #a0a0a0;
+  word-break: break-all;
+}
+
+.blork-tabs-debug-log-entry:last-child {
+  border-bottom: none;
+}
+
+.blork-tabs-debug-log-name {
+  color: var(--blork-tabs-accent, #4a90d9);
+  margin-right: 6px;
+}
+
+/* Log level colors */
+.blork-tabs-debug-log-entry-warn .blork-tabs-debug-log-name {
+  color: #feca57;
+}
+
+.blork-tabs-debug-log-entry-error .blork-tabs-debug-log-name {
+  color: #ff6b6b;
+}
+
+.blork-tabs-debug-log-data {
+  color: #888;
+}
+
+.blork-tabs-debug-log-timestamp {
+  color: #666;
+  margin-right: 6px;
+  font-size: 10px;
+}
+
+.blork-tabs-debug-clear-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--blork-tabs-header-color, #e0e0e0);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+  opacity: 0.6;
+}
+
+.blork-tabs-debug-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+/* Hide close button when NOT enlarged (only show when zoomed) */
+.blork-tabs-debug-panel .blork-tabs-debug-clear-btn {
+  display: none;
+}
+
+.blork-tabs-debug-panel-enlarged .blork-tabs-debug-clear-btn {
+  display: flex;
+}
+
+/* Debug panel hover effects */
+.blork-tabs-debug-panel {
+  transition: border-color 0.3s ease, opacity 0.3s ease;
+}
+
+.blork-tabs-debug-panel:hover {
+  border-color: var(--blork-tabs-accent, #4a90d9);
+  box-shadow: 0 0 12px rgba(74, 144, 217, 0.3);
+}
+
+/* Enlarged state after hover timeout - 75% of screen, modal-level z-index */
+.blork-tabs-debug-panel-enlarged {
+  position: fixed !important;
+  width: 75vw !important;
+  left: 12.5vw !important;
+  top: 12.5vh !important;
+  z-index: 100000 !important;
+}
+
+/* Make content area fill the enlarged panel */
+.blork-tabs-debug-panel-enlarged .blork-tabs-content {
+  max-height: 70vh !important;
+  padding: 16px;
+}
+
+.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log {
+  max-height: 65vh !important;
+  min-height: 65vh !important;
+  font-size: 22px !important;
+  line-height: 1.6;
+}
+
+.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-entry {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-name {
+  font-size: 22px;
+}
+
+.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-data {
+  font-size: 20px;
+}
+
+.blork-tabs-debug-panel-enlarged .blork-tabs-debug-log-timestamp {
+  font-size: 20px !important;
+}
+
+.blork-tabs-debug-panel-enlarged .blork-tabs-header {
+  padding: 14px 18px;
+}
+
+.blork-tabs-debug-panel-enlarged .blork-tabs-title {
+  font-size: 20px;
+}
+
+/* Backdrop when enlarged */
+.blork-tabs-debug-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+/* Debug log scrollbar styling */
+.blork-tabs-debug-log::-webkit-scrollbar {
+  width: 6px;
+}
+
+.blork-tabs-debug-log::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.blork-tabs-debug-log::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.blork-tabs-debug-log::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
