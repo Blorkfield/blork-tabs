@@ -73,6 +73,9 @@ function generateClasses(prefix: string): CSSClasses {
     debugLogData: `${prefix}-debug-log-data`,
     debugLogTimestamp: `${prefix}-debug-log-timestamp`,
     debugClearButton: `${prefix}-debug-clear-btn`,
+    debugPanel: `${prefix}-debug-panel`,
+    debugPanelEnlarged: `${prefix}-debug-panel-enlarged`,
+    debugBackdrop: `${prefix}-debug-backdrop`,
   };
 }
 
@@ -248,32 +251,80 @@ export class TabManager {
       startCollapsed: config.startCollapsed ?? true,
     };
 
-    // Add clear button to header if enabled
-    const showClearButton = config.showClearButton ?? true;
-
     const state = this.addPanel(panelConfig);
 
-    // Add clear button after panel is created
-    if (showClearButton && state.collapseButton) {
-      const clearBtn = document.createElement('button');
-      clearBtn.className = this.classes.debugClearButton;
-      clearBtn.textContent = '×';
-      clearBtn.title = 'Clear log';
-      state.collapseButton.parentElement?.insertBefore(clearBtn, state.collapseButton);
-      elements.clearButton = clearBtn;
+    // Add debug panel class for hover effects
+    state.element.classList.add(this.classes.debugPanel);
+
+    // Add close button (×) to header - used to close enlarged view
+    const closeBtn = document.createElement('button');
+    closeBtn.className = this.classes.debugClearButton;
+    closeBtn.textContent = '×';
+    closeBtn.title = 'Close enlarged view';
+    if (state.collapseButton) {
+      state.collapseButton.parentElement?.insertBefore(closeBtn, state.collapseButton);
     }
+    elements.clearButton = closeBtn;
 
     this.debugPanelElements.set(state.id, elements);
 
     const debugPanel = createDebugPanelInterface(state, elements, config, this.classes);
 
-    // Wire up clear button
-    if (elements.clearButton) {
-      elements.clearButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        debugPanel.clear();
-      });
-    }
+    // Set up hover-to-enlarge behavior (5 second delay)
+    let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
+    let isEnlarged = false;
+    let backdrop: HTMLDivElement | null = null;
+    const enlargedClass = this.classes.debugPanelEnlarged;
+    const backdropClass = this.classes.debugBackdrop;
+
+    const closeEnlarged = () => {
+      if (!isEnlarged) return;
+      isEnlarged = false;
+      state.element.classList.remove(enlargedClass);
+      if (backdrop) {
+        backdrop.remove();
+        backdrop = null;
+      }
+    };
+
+    const openEnlarged = () => {
+      if (isEnlarged) return;
+      isEnlarged = true;
+
+      // Create backdrop
+      backdrop = document.createElement('div');
+      backdrop.className = backdropClass;
+      this.config.container.appendChild(backdrop);
+
+      // Click backdrop to close
+      backdrop.addEventListener('click', closeEnlarged);
+
+      // Add enlarged class
+      state.element.classList.add(enlargedClass);
+    };
+
+    // Hover to start enlarge timer (only when not already enlarged)
+    state.element.addEventListener('mouseenter', () => {
+      if (isEnlarged) return;
+      hoverTimeout = setTimeout(() => {
+        openEnlarged();
+      }, 5000);
+    });
+
+    // Cancel timer if mouse leaves before 5 seconds (but don't close if already enlarged)
+    state.element.addEventListener('mouseleave', () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+        hoverTimeout = null;
+      }
+      // Don't close on mouseleave - only × or backdrop click closes
+    });
+
+    // × button closes enlarged view
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeEnlarged();
+    });
 
     return debugPanel;
   }

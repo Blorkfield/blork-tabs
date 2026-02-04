@@ -355,6 +355,9 @@ export interface CSSClasses {
   debugLogData: string;
   debugLogTimestamp: string;
   debugClearButton: string;
+  debugPanel: string;
+  debugPanelEnlarged: string;
+  debugBackdrop: string;
 }
 
 // ==================== Debug Panel Types ====================
@@ -367,8 +370,6 @@ export interface DebugPanelConfig extends Omit<PanelConfig, 'content'> {
   maxEntries?: number;
   /** Show timestamps on entries (default: false) */
   showTimestamps?: boolean;
-  /** Show clear button in header (default: true) */
-  showClearButton?: boolean;
 }
 
 /**

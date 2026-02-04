@@ -105,6 +105,7 @@ const manager = new TabManager({
 
 #### Panel Management
 - `addPanel(config)` - Create a new panel
+- `addDebugPanel(config)` - Create a debug panel with logging interface
 - `registerPanel(id, element, options)` - Register existing DOM element
 - `removePanel(id)` - Remove a panel
 - `getPanel(id)` - Get panel by ID
@@ -250,6 +251,87 @@ manager.on('panel:hide', ({ panel, trigger }) => {
 manager.hide('my-panel');  // Hide immediately
 manager.show('my-panel');  // Show immediately
 manager.isHidden('my-panel');  // Check visibility
+```
+
+## Debug Panel
+
+A plug-and-play debug panel for in-browser event logging—useful for OBS browser sources and other environments without console access.
+
+### Creating a Debug Panel
+
+```typescript
+import { TabManager } from '@blorkfield/blork-tabs';
+
+const manager = new TabManager();
+
+// Create a debug panel
+const debug = manager.addDebugPanel({
+  id: 'debug',
+  title: 'Event Log',        // optional, default: 'Debug'
+  width: 300,                // optional, default: 300
+  maxEntries: 50,            // optional, default: 50
+  showTimestamps: true,      // optional, default: false
+  showClearButton: true,     // optional, default: true
+  startCollapsed: true,      // optional, default: true
+  initialPosition: { x: 16, y: 16 },
+});
+```
+
+### Logging Events
+
+Log events with different severity levels, each with distinct color coding:
+
+```typescript
+// Info/Log level - blue (accent color)
+debug.log('event-name', { some: 'data' });
+debug.info('connection', { status: 'connected' });
+
+// Warning level - yellow
+debug.warn('cache', { message: 'Cache expired, refreshing...' });
+
+// Error level - red
+debug.error('request', { code: 500, message: 'Server error' });
+
+// Clear all entries
+debug.clear();
+```
+
+### Features
+
+- **Pre-styled monospace container** - Optimized for log readability
+- **Color-coded log levels** - Blue for info, yellow for warnings, red for errors
+- **Auto-scroll** - Automatically scrolls to show latest entries
+- **Entry limit** - Configurable max entries with FIFO removal of oldest
+- **Timestamps** - Optional timestamp display for each entry
+- **Hover glow effect** - Border lights up with accent color on hover
+- **Enlarge on hover** - Hover for 5 seconds to expand to 75% of screen with 2x text size
+- **Modal backdrop** - Enlarged view has a backdrop; click × or backdrop to close
+- **Standard panel features** - Drag, snap, collapse, auto-hide all work
+
+### Enlarged View Behavior
+
+The debug panel has a special "focus mode" for reading logs:
+
+1. **Hover for 5 seconds** → Panel enlarges to 75% of screen with doubled text size
+2. **Mouse can move freely** → Panel stays enlarged, won't close on mouse leave
+3. **Click × or backdrop** → Returns to normal size
+
+The × button is only visible when enlarged.
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `maxEntries` | `number` | `50` | Maximum log entries before oldest are removed |
+| `showTimestamps` | `boolean` | `false` | Show timestamps on each entry |
+
+Plus all standard `PanelConfig` options (`id`, `title`, `width`, `initialPosition`, `startCollapsed`, etc.)
+
+### Accessing the Underlying Panel
+
+```typescript
+// The debug panel interface includes access to the panel state
+debug.panel;  // PanelState - for advanced manipulation
 ```
 
 ## CSS Customization
