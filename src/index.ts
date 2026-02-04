@@ -42,6 +42,7 @@ export { AnchorManager, getDefaultAnchorConfigs, createPresetAnchor } from './An
 export { DragManager } from './DragManager';
 export { SnapPreview } from './SnapPreview';
 export { AutoHideManager } from './AutoHideManager';
+export { createDebugPanelContent, createDebugPanelInterface } from './DebugPanel';
 export type { AutoHideCallbacks } from './AutoHideManager';
 export {
   createPanelElement,
@@ -77,6 +78,7 @@ export type {
   PanelConfig,
   AnchorConfig,
   AnchorPreset,
+  DebugPanelConfig,
 
   // State
   PanelState,
@@ -108,4 +110,8 @@ export type {
 
   // CSS
   CSSClasses,
+
+  // Debug Panel
+  DebugPanel,
+  DebugLogLevel,
 } from './types';

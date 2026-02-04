@@ -199,3 +199,91 @@
 .blork-tabs-dragging .blork-tabs-panel {
   transition: none !important;
 }
+
+/* Debug Panel Log */
+.blork-tabs-debug-log {
+  min-height: 100px;
+  max-height: 200px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 8px;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 11px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.blork-tabs-debug-log-entry {
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #a0a0a0;
+  word-break: break-all;
+}
+
+.blork-tabs-debug-log-entry:last-child {
+  border-bottom: none;
+}
+
+.blork-tabs-debug-log-name {
+  color: var(--blork-tabs-accent, #4a90d9);
+  margin-right: 6px;
+}
+
+/* Log level colors */
+.blork-tabs-debug-log-entry-warn .blork-tabs-debug-log-name {
+  color: #feca57;
+}
+
+.blork-tabs-debug-log-entry-error .blork-tabs-debug-log-name {
+  color: #ff6b6b;
+}
+
+.blork-tabs-debug-log-data {
+  color: #888;
+}
+
+.blork-tabs-debug-log-timestamp {
+  color: #666;
+  margin-right: 6px;
+  font-size: 10px;
+}
+
+.blork-tabs-debug-clear-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--blork-tabs-header-color, #e0e0e0);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+  opacity: 0.6;
+}
+
+.blork-tabs-debug-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+/* Debug log scrollbar styling */
+.blork-tabs-debug-log::-webkit-scrollbar {
+  width: 6px;
+}
+
+.blork-tabs-debug-log::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.blork-tabs-debug-log::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.blork-tabs-debug-log::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

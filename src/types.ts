@@ -346,4 +346,50 @@ export interface CSSClasses {
   anchorIndicatorActive: string;
   dragging: string;
   panelHidden: string;
+  debugLog: string;
+  debugLogEntry: string;
+  debugLogEntryInfo: string;
+  debugLogEntryWarn: string;
+  debugLogEntryError: string;
+  debugLogName: string;
+  debugLogData: string;
+  debugLogTimestamp: string;
+  debugClearButton: string;
+}
+
+// ==================== Debug Panel Types ====================
+
+/**
+ * Configuration for creating a debug panel
+ */
+export interface DebugPanelConfig extends Omit<PanelConfig, 'content'> {
+  /** Maximum log entries before oldest are removed (default: 50) */
+  maxEntries?: number;
+  /** Show timestamps on entries (default: false) */
+  showTimestamps?: boolean;
+  /** Show clear button in header (default: true) */
+  showClearButton?: boolean;
+}
+
+/**
+ * Log level for debug entries
+ */
+export type DebugLogLevel = 'log' | 'info' | 'warn' | 'error';
+
+/**
+ * Interface for interacting with a debug panel
+ */
+export interface DebugPanel {
+  /** Log an event (alias for info) */
+  log(eventName: string, data?: Record<string, unknown>): void;
+  /** Log an info event (blue) */
+  info(eventName: string, data?: Record<string, unknown>): void;
+  /** Log a warning event (yellow) */
+  warn(eventName: string, data?: Record<string, unknown>): void;
+  /** Log an error event (red) */
+  error(eventName: string, data?: Record<string, unknown>): void;
+  /** Clear all log entries */
+  clear(): void;
+  /** The underlying panel state */
+  panel: PanelState;
 }

@@ -18,7 +18,10 @@ import type {
   AnchorSnapResult,
   DragState,
   Position,
+  DebugPanelConfig,
+  DebugPanel,
 } from './types';
+import { createDebugPanelContent, createDebugPanelInterface, DebugPanelElements } from './DebugPanel';
 import { createPanelState, toggleCollapse, setPanelPosition } from './Panel';
 import { getConnectedGroup, detachFromGroup, updateSnappedPositions, snapPanels } from './SnapChain';
 import { DragManager } from './DragManager';
@@ -61,6 +64,15 @@ function generateClasses(prefix: string): CSSClasses {
     anchorIndicatorActive: `${prefix}-anchor-indicator-active`,
     dragging: `${prefix}-dragging`,
     panelHidden: `${prefix}-panel-hidden`,
+    debugLog: `${prefix}-debug-log`,
+    debugLogEntry: `${prefix}-debug-log-entry`,
+    debugLogEntryInfo: `${prefix}-debug-log-entry-info`,
+    debugLogEntryWarn: `${prefix}-debug-log-entry-warn`,
+    debugLogEntryError: `${prefix}-debug-log-entry-error`,
+    debugLogName: `${prefix}-debug-log-name`,
+    debugLogData: `${prefix}-debug-log-data`,
+    debugLogTimestamp: `${prefix}-debug-log-timestamp`,
+    debugClearButton: `${prefix}-debug-clear-btn`,
   };
 }
 
@@ -76,6 +88,7 @@ export class TabManager {
   private snapPreview: SnapPreview;
   private autoHideManager: AutoHideManager;
   private eventListeners: Map<string, Set<EventListener<unknown>>> = new Map();
+  private debugPanelElements: Map<string, DebugPanelElements> = new Map();
 
   constructor(userConfig: TabManagerConfig = {}) {
     // Merge user config with defaults
@@ -190,6 +203,9 @@ export class TabManager {
     // Clean up auto-hide timer
     this.autoHideManager.cleanupPanel(id);
 
+    // Clean up debug panel elements
+    this.debugPanelElements.delete(id);
+
     // Detach from any snap chain
     detachFromGroup(panel, this.panels);
 
@@ -216,6 +232,50 @@ export class TabManager {
    */
   getAllPanels(): PanelState[] {
     return Array.from(this.panels.values());
+  }
+
+  /**
+   * Add a debug panel with built-in logging functionality
+   */
+  addDebugPanel(config: DebugPanelConfig): DebugPanel {
+    const { content, elements } = createDebugPanelContent(config, this.classes);
+
+    // Create panel with generated content
+    const panelConfig: PanelConfig = {
+      ...config,
+      title: config.title ?? 'Debug',
+      content,
+      startCollapsed: config.startCollapsed ?? true,
+    };
+
+    // Add clear button to header if enabled
+    const showClearButton = config.showClearButton ?? true;
+
+    const state = this.addPanel(panelConfig);
+
+    // Add clear button after panel is created
+    if (showClearButton && state.collapseButton) {
+      const clearBtn = document.createElement('button');
+      clearBtn.className = this.classes.debugClearButton;
+      clearBtn.textContent = '×';
+      clearBtn.title = 'Clear log';
+      state.collapseButton.parentElement?.insertBefore(clearBtn, state.collapseButton);
+      elements.clearButton = clearBtn;
+    }
+
+    this.debugPanelElements.set(state.id, elements);
+
+    const debugPanel = createDebugPanelInterface(state, elements, config, this.classes);
+
+    // Wire up clear button
+    if (elements.clearButton) {
+      elements.clearButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        debugPanel.clear();
+      });
+    }
+
+    return debugPanel;
   }
 
   /**
@@ -556,5 +616,6 @@ export class TabManager {
 
     this.panels.clear();
     this.eventListeners.clear();
+    this.debugPanelElements.clear();
   }
 }
