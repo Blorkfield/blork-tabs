@@ -523,7 +523,9 @@ function initializeTestbed() {
   });
 
   // ============================================================
-  // Pin demo panel - single togglable pin button test panel
+  // Pin demo panel - tests pin immunity to auto-hide
+  // Starts hidden, shows on activity, hides after 3s of inactivity.
+  // Pinning should cancel the hide timer and keep the panel visible.
   // ============================================================
   const pinDemoPanel = manager.addPanel({
     id: 'pin-demo',
@@ -532,11 +534,18 @@ function initializeTestbed() {
     startCollapsed: false,
     pinnable: true,
     startPinned: false,
+    startHidden: true,
+    autoHideDelay: 3000,
     initialPosition: { x: (window.innerWidth / 2) - 120, y: 16 },
     content: `
-      <p style="font-size: 12px; color: #888;">
-        Click the thumbtack in the header to toggle pin state.
-      </p>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <p style="font-size: 12px; color: #feca57;">
+          Auto-hides after 3s of inactivity.
+        </p>
+        <p style="font-size: 11px; color: #888;">
+          Pin it to prevent hiding. Unpin to re-enable auto-hide.
+        </p>
+      </div>
     `,
   });
 
