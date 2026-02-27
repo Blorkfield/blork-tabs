@@ -338,6 +338,7 @@ function initializeTestbed() {
   manager.on('snap:panel', (e) => logEvent('snap:panel', { panels: e.movingPanels.map(p => p.id), target: e.targetPanel.id }));
   manager.on('snap:anchor', (e) => logEvent('snap:anchor', { panels: e.movingPanels.map(p => p.id), anchor: e.anchor.config.id }));
   manager.on('panel:detached', (e) => logEvent('panel:detached', { panel: e.panel.id }));
+  manager.on('panel:pin', (e) => logEvent('panel:pin', { panel: e.panel.id }));
   manager.on('panel:collapse', (e) => logEvent('panel:collapse', { panel: e.panel.id, collapsed: e.isCollapsed }));
   manager.on('panel:show', (e) => logEvent('panel:show', { panel: e.panel.id, trigger: e.trigger }));
   manager.on('panel:hide', (e) => logEvent('panel:hide', { panel: e.panel.id, trigger: e.trigger }));
@@ -370,7 +371,9 @@ function initializeTestbed() {
   });
 
   // Position and snap together on right side
-  manager.positionPanelsFromRight(['settings', 'tools', 'properties']);
+  // positionPanelsFromRight places first ID at the right edge, so use right-to-left order.
+  // createSnapChain uses left-to-right order. These must be reversed relative to each other.
+  manager.positionPanelsFromRight(['properties', 'tools', 'settings']);
   manager.createSnapChain(['settings', 'tools', 'properties']);
 
   // ============================================================
@@ -519,7 +522,25 @@ function initializeTestbed() {
     `,
   });
 
-  panelCounter = 12;
+  // ============================================================
+  // Pin demo panel - single togglable pin button test panel
+  // ============================================================
+  const pinDemoPanel = manager.addPanel({
+    id: 'pin-demo',
+    title: 'Pin Demo',
+    width: 240,
+    startCollapsed: false,
+    pinnable: true,
+    startPinned: false,
+    initialPosition: { x: (window.innerWidth / 2) - 120, y: 16 },
+    content: `
+      <p style="font-size: 12px; color: #888;">
+        Click the thumbtack in the header to toggle pin state.
+      </p>
+    `,
+  });
+
+  panelCounter = 13;
 }
 
 function setupControls() {

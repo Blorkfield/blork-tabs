@@ -49,6 +49,8 @@ export class AutoHideManager {
    */
   private handleActivity(): void {
     for (const panel of this.panels.values()) {
+      // Pinned panels are immune to activity-based show/hide
+      if (panel.isPinned) continue;
       // Only process panels that participate in auto-hide
       if (panel.resolvedAutoHideDelay !== undefined || panel.isHidden) {
         this.show(panel, 'activity');
@@ -97,8 +99,27 @@ export class AutoHideManager {
    */
   hide(panel: PanelState, trigger: 'timeout' | 'api'): void {
     if (panel.isHidden) return;
+    if (panel.isPinned) return; // Pinned panels are always visible
     hidePanel(panel, this.classes);
     this.callbacks.onHide?.(panel, trigger);
+  }
+
+  /**
+   * Called when a panel's pin state changes.
+   * Pinning cancels the hide timer and reveals the panel if hidden.
+   * Unpinning restarts the timer if the panel participates in auto-hide.
+   */
+  onPanelPinChanged(panel: PanelState): void {
+    if (panel.isPinned) {
+      this.clearTimer(panel.id);
+      if (panel.isHidden) {
+        this.show(panel, 'api');
+      }
+    } else {
+      if (!panel.isHidden && panel.resolvedAutoHideDelay !== undefined) {
+        this.scheduleHide(panel);
+      }
+    }
   }
 
   /**

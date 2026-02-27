@@ -13,7 +13,7 @@ import type {
   ResolvedTabManagerConfig,
 } from './types';
 import {
-  getConnectedGroup,
+  getMovingGroupRespectingPins,
   detachFromGroup,
   findSnapTarget,
   snapPanelsToTarget,
@@ -76,24 +76,24 @@ export class DragManager {
     e.preventDefault();
     e.stopPropagation();
 
-    const connectedPanels = getConnectedGroup(panel, this.panels);
-
-    // Store initial positions
-    const initialGroupPositions = new Map<string, Position>();
-    for (const p of connectedPanels) {
-      const rect = p.element.getBoundingClientRect();
-      initialGroupPositions.set(p.id, { x: rect.left, y: rect.top });
-    }
-
     let movingPanels: PanelState[];
 
     if (mode === 'single') {
-      // Detach this panel from its group
+      // Detach this panel from its group and move it alone
       detachFromGroup(panel, this.panels);
       movingPanels = [panel];
     } else {
-      // Move entire group
-      movingPanels = connectedPanels;
+      // Group drag: collect panels on either side of the grabbed panel,
+      // splitting at any pinned panel and severing those bonds
+      movingPanels = getMovingGroupRespectingPins(panel, this.panels);
+      if (movingPanels.length === 0) return;
+    }
+
+    // Store initial positions for the panels that will actually move
+    const initialGroupPositions = new Map<string, Position>();
+    for (const p of movingPanels) {
+      const rect = p.element.getBoundingClientRect();
+      initialGroupPositions.set(p.id, { x: rect.left, y: rect.top });
     }
 
     const rect = panel.element.getBoundingClientRect();

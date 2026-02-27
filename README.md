@@ -149,6 +149,7 @@ const manager = new TabManager({
 | `snap:panel` | Panels snapped together |
 | `snap:anchor` | Panels snapped to anchor |
 | `panel:detached` | Panel detached from chain |
+| `panel:pin` | Panel pin/unpinned |
 | `panel:collapse` | Panel collapsed/expanded |
 | `panel:show` | Panel became visible (auto-hide) |
 | `panel:hide` | Panel became hidden (auto-hide) |

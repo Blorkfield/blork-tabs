@@ -22,7 +22,7 @@ import type {
   DebugPanel,
 } from './types';
 import { createDebugPanelContent, createDebugPanelInterface, DebugPanelElements } from './DebugPanel';
-import { createPanelState, toggleCollapse, setPanelPosition } from './Panel';
+import { createPanelState, toggleCollapse, togglePin, setPanelPosition } from './Panel';
 import { getConnectedGroup, detachFromGroup, updateSnappedPositions, snapPanels } from './SnapChain';
 import { DragManager } from './DragManager';
 import { AnchorManager } from './AnchorManager';
@@ -56,6 +56,7 @@ function generateClasses(prefix: string): CSSClasses {
     panelContent: `${prefix}-content`,
     panelContentCollapsed: `${prefix}-content-collapsed`,
     detachGrip: `${prefix}-detach-grip`,
+    pinButton: `${prefix}-pin-btn`,
     collapseButton: `${prefix}-collapse-btn`,
     snapPreview: `${prefix}-snap-preview`,
     snapPreviewVisible: `${prefix}-snap-preview-visible`,
@@ -179,6 +180,7 @@ export class TabManager {
     element: HTMLDivElement,
     options: {
       dragHandle?: HTMLDivElement;
+      pinButton?: HTMLButtonElement;
       collapseButton?: HTMLButtonElement;
       contentWrapper?: HTMLDivElement;
       detachGrip?: HTMLDivElement;
@@ -189,6 +191,7 @@ export class TabManager {
       id,
       element,
       dragHandle: options.dragHandle,
+      pinButton: options.pinButton,
       collapseButton: options.collapseButton,
       contentWrapper: options.contentWrapper,
       detachGrip: options.detachGrip,
@@ -342,22 +345,35 @@ export class TabManager {
       });
     }
 
+    // Pin button
+    if (state.pinButton) {
+      state.pinButton.addEventListener('click', () => {
+        const isPinned = togglePin(state);
+        this.autoHideManager.onPanelPinChanged(state);
+        this.emit('panel:pin', { panel: state, isPinned });
+      });
+    }
+
     // Detach grip - single panel drag
     if (state.detachGrip) {
       state.detachGrip.addEventListener('mousedown', (e) => {
+        if (state.isPinned) return;
         this.dragManager.startDrag(e, state, 'single');
       });
     }
 
     // Main drag handle - group drag
     state.dragHandle.addEventListener('mousedown', (e) => {
-      // Ignore if clicking on collapse button or detach grip
+      // Ignore if clicking on collapse button, pin button, or detach grip
+      const target = e.target as Node;
       if (
         e.target === state.collapseButton ||
-        e.target === state.detachGrip
+        e.target === state.detachGrip ||
+        (state.pinButton && state.pinButton.contains(target))
       ) {
         return;
       }
+      if (state.isPinned) return;
       this.dragManager.startDrag(e, state, 'group');
     });
   }

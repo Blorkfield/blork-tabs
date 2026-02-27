@@ -9,6 +9,9 @@ import type {
   CSSClasses,
 } from './types';
 
+const PIN_ICON_UNPINNED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17H19V16L17 11V4H7L5 11V16Z"/><line x1="5" y1="11" x2="19" y2="11"/></svg>`;
+const PIN_ICON_PINNED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;transform:rotate(90deg)"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17H19V16L17 11V4H7L5 11V16Z"/><line x1="5" y1="11" x2="19" y2="11"/></svg>`;
+
 /**
  * Creates the default panel DOM structure
  */
@@ -18,6 +21,7 @@ export function createPanelElement(
 ): {
   element: HTMLDivElement;
   dragHandle: HTMLDivElement;
+  pinButton: HTMLButtonElement | null;
   collapseButton: HTMLButtonElement | null;
   contentWrapper: HTMLDivElement;
   detachGrip: HTMLDivElement | null;
@@ -48,6 +52,16 @@ export function createPanelElement(
     title.className = classes.panelTitle;
     title.textContent = config.title;
     header.appendChild(title);
+  }
+
+  // Pin button (only if explicitly pinnable)
+  let pinButton: HTMLButtonElement | null = null;
+  if (config.pinnable === true) {
+    pinButton = document.createElement('button');
+    pinButton.className = classes.pinButton;
+    pinButton.id = `${config.id}-pin-btn`;
+    pinButton.innerHTML = config.startPinned === true ? PIN_ICON_PINNED : PIN_ICON_UNPINNED;
+    header.appendChild(pinButton);
   }
 
   // Collapse button (if collapsible)
@@ -84,6 +98,7 @@ export function createPanelElement(
   return {
     element,
     dragHandle: header,
+    pinButton,
     collapseButton,
     contentWrapper,
     detachGrip,
@@ -100,6 +115,7 @@ export function createPanelState(
 ): PanelState {
   let element: HTMLDivElement;
   let dragHandle: HTMLDivElement;
+  let pinButton: HTMLButtonElement | null;
   let collapseButton: HTMLButtonElement | null;
   let contentWrapper: HTMLDivElement;
   let detachGrip: HTMLDivElement | null;
@@ -108,6 +124,7 @@ export function createPanelState(
     // Use existing DOM elements
     element = config.element;
     dragHandle = config.dragHandle ?? (element.querySelector(`.${classes.panelHeader}`) as HTMLDivElement);
+    pinButton = config.pinButton ?? (element.querySelector(`.${classes.pinButton}`) as HTMLButtonElement | null);
     collapseButton = config.collapseButton ?? (element.querySelector(`.${classes.collapseButton}`) as HTMLButtonElement | null);
     contentWrapper = config.contentWrapper ?? (element.querySelector(`.${classes.panelContent}`) as HTMLDivElement);
     detachGrip = config.detachGrip ?? (element.querySelector(`.${classes.detachGrip}`) as HTMLDivElement | null);
@@ -116,6 +133,7 @@ export function createPanelState(
     const created = createPanelElement(config, classes);
     element = created.element;
     dragHandle = created.dragHandle;
+    pinButton = created.pinButton;
     collapseButton = created.collapseButton;
     contentWrapper = created.contentWrapper;
     detachGrip = created.detachGrip;
@@ -136,9 +154,11 @@ export function createPanelState(
     id: config.id,
     element,
     dragHandle,
+    pinButton,
     collapseButton,
     contentWrapper,
     detachGrip,
+    isPinned: config.startPinned === true,
     isCollapsed: config.startCollapsed !== false,
     snappedTo: null,
     snappedFrom: null,
@@ -167,6 +187,23 @@ export function toggleCollapse(
 
   if (state.collapseButton) {
     state.collapseButton.textContent = newState ? '+' : '−';
+  }
+
+  return newState;
+}
+
+/**
+ * Toggle panel pin state
+ */
+export function togglePin(
+  state: PanelState,
+  pinned?: boolean
+): boolean {
+  const newState = pinned ?? !state.isPinned;
+  state.isPinned = newState;
+
+  if (state.pinButton) {
+    state.pinButton.innerHTML = newState ? PIN_ICON_PINNED : PIN_ICON_UNPINNED;
   }
 
   return newState;

@@ -57,6 +57,8 @@ export interface PanelConfig {
   title?: string;
   /** Initial width (default: 300) */
   width?: number;
+  /** Initial pin state (default: false) */
+  startPinned?: boolean;
   /** Initial collapsed state (default: true) */
   startCollapsed?: boolean;
   /** Initial position (optional - will be auto-positioned if not provided) */
@@ -67,12 +69,16 @@ export interface PanelConfig {
   element?: HTMLDivElement;
   /** Custom drag handle element */
   dragHandle?: HTMLDivElement;
+  /** Custom pin button element */
+  pinButton?: HTMLButtonElement;
   /** Custom collapse button element */
   collapseButton?: HTMLButtonElement;
   /** Custom content wrapper element */
   contentWrapper?: HTMLDivElement;
   /** Custom detach grip element */
   detachGrip?: HTMLDivElement;
+  /** Whether panel can be pinned (default: false) */
+  pinnable?: boolean;
   /** Whether panel can be collapsed (default: true) */
   collapsible?: boolean;
   /** Whether panel can be detached from group (default: true) */
@@ -126,12 +132,16 @@ export interface PanelState {
   element: HTMLDivElement;
   /** Drag handle element */
   dragHandle: HTMLDivElement;
+  /** Pin button element (if pinable) */
+  pinButton: HTMLButtonElement | null;
   /** Collapse button element (if collapsible) */
   collapseButton: HTMLButtonElement | null;
   /** Content wrapper element */
   contentWrapper: HTMLDivElement;
   /** Detach grip element (if detachable) */
   detachGrip: HTMLDivElement | null;
+  /** Whether panel is currently pinned */
+  isPinned: boolean;
   /** Whether panel is currently collapsed */
   isCollapsed: boolean;
   /** ID of panel this is snapped to on its right (outgoing link) */
@@ -254,6 +264,8 @@ export interface TabManagerEvents {
   'snap:anchor': AnchorSnapEvent;
   /** Fired when a panel is detached from group */
   'panel:detached': PanelDetachedEvent;
+  /** Fired when panel pin state changes */
+  'panel:pin': PanelPinEvent;
   /** Fired when panel collapse state changes */
   'panel:collapse': PanelCollapseEvent;
   /** Fired when a panel becomes visible (auto-hide) */
@@ -306,6 +318,11 @@ export interface PanelDetachedEvent {
   previousGroup: PanelState[];
 }
 
+export interface PanelPinEvent {
+  panel: PanelState;
+  isPinned: boolean;
+}
+
 export interface PanelCollapseEvent {
   panel: PanelState;
   isCollapsed: boolean;
@@ -338,6 +355,7 @@ export interface CSSClasses {
   panelContent: string;
   panelContentCollapsed: string;
   detachGrip: string;
+  pinButton: string;
   collapseButton: string;
   snapPreview: string;
   snapPreviewVisible: string;

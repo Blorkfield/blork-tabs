@@ -48,6 +48,7 @@ export {
   createPanelElement,
   createPanelState,
   toggleCollapse,
+  togglePin,
   showPanel,
   hidePanel,
   setPanelPosition,
@@ -59,6 +60,7 @@ export {
 } from './Panel';
 export {
   getConnectedGroup,
+  getMovingGroupRespectingPins,
   detachFromGroup,
   findSnapTarget,
   snapPanelsToTarget,
@@ -103,6 +105,7 @@ export type {
   PanelSnapEvent,
   AnchorSnapEvent,
   PanelDetachedEvent,
+  PanelPinEvent,
   PanelCollapseEvent,
   PanelShowEvent,
   PanelHideEvent,
