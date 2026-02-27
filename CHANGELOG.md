@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.4.0
+
+### Minor Changes
+
+- 540eaf2: feat: tab pin
+
 ## 0.3.1
 
 ### Patch Changes
