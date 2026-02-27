@@ -274,6 +274,51 @@ export function snapPanels(
 }
 
 /**
+ * Get the subset of connected panels that should move when a panel is grabbed,
+ * stopping at any pinned panel in the chain.
+ *
+ * Pinned panels act as immoveable barriers — the chain splits at each one,
+ * and only the panels on the same side as the grabbed panel are returned.
+ * The snap bonds at each pin boundary are severed as a side effect.
+ *
+ * Example: chain [A, B, P(pinned), C, D], grab B → returns [A, B], unseats B↔P
+ * Example: chain [A, P(pinned), B, C], grab C → returns [B, C], unseats P↔B
+ */
+export function getMovingGroupRespectingPins(
+  grabbedPanel: PanelState,
+  panels: Map<string, PanelState>
+): PanelState[] {
+  if (grabbedPanel.isPinned) return [];
+
+  const fullGroup = getConnectedGroup(grabbedPanel, panels);
+  const grabbedIndex = fullGroup.indexOf(grabbedPanel);
+
+  // Walk left from the grabbed panel, stopping before any pinned panel
+  const leftPanels: PanelState[] = [];
+  for (let i = grabbedIndex; i >= 0; i--) {
+    if (fullGroup[i].isPinned) {
+      // Sever the bond between this pinned panel and the next moveable panel
+      unsnap(fullGroup[i], fullGroup[i + 1]);
+      break;
+    }
+    leftPanels.unshift(fullGroup[i]);
+  }
+
+  // Walk right from the grabbed panel, stopping before any pinned panel
+  const rightPanels: PanelState[] = [];
+  for (let i = grabbedIndex + 1; i < fullGroup.length; i++) {
+    if (fullGroup[i].isPinned) {
+      // Sever the bond between the last moveable panel and this pinned panel
+      unsnap(fullGroup[i - 1], fullGroup[i]);
+      break;
+    }
+    rightPanels.push(fullGroup[i]);
+  }
+
+  return [...leftPanels, ...rightPanels];
+}
+
+/**
  * Break the snap relationship between two specific panels
  */
 export function unsnap(

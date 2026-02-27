@@ -8,6 +8,7 @@ A framework-agnostic tab/panel management system with snapping and docking capab
 - **Anchor Docking** - Dock panels to predefined screen positions
 - **Drag Modes** - Drag entire groups or detach individual panels
 - **Collapse/Expand** - Panels can be collapsed with automatic repositioning
+- **Pin** - Pin panels to prevent dragging and opt out of auto-hide
 - **Auto-Hide** - Panels can hide after inactivity and show on interaction
 - **Event System** - Subscribe to drag, snap, and collapse events
 - **Fully Typed** - Complete TypeScript support
@@ -54,6 +55,7 @@ manager.registerPanel('my-panel', document.getElementById('my-panel'), {
 });
 
 // Position panels and create snap chains
+// positionPanelsFromRight takes IDs right-to-left; createSnapChain takes them left-to-right
 manager.positionPanelsFromRight(['tools', 'settings']);
 manager.createSnapChain(['settings', 'tools']);
 
@@ -99,6 +101,40 @@ const manager = new TabManager({
 });
 ```
 
+## Panel Configuration
+
+Each panel accepts the following options via `addPanel(config)`:
+
+```typescript
+manager.addPanel({
+  id: 'my-panel',           // Required. Unique identifier.
+  title: 'My Panel',        // Header text.
+  width: 300,               // Panel width in px (default: 300).
+  initialPosition: { x: 100, y: 100 },  // Starting position. Auto-placed if omitted.
+  content: '<div>...</div>', // HTML string or HTMLElement for the content area.
+
+  // Collapse
+  startCollapsed: true,     // Whether the panel starts collapsed (default: true).
+  collapsible: true,        // Show collapse button (default: true).
+
+  // Pin
+  pinnable: false,          // Show pin button in header (default: false).
+  startPinned: false,       // Initial pin state (default: false).
+
+  // Drag
+  draggable: true,          // Allow dragging (default: true).
+  detachable: true,         // Show detach grip for single-panel drag (default: true).
+
+  // Auto-hide overrides (see Auto-Hide section)
+  startHidden: false,       // Override global startHidden for this panel.
+  autoHideDelay: undefined, // Override global autoHideDelay (0 = disable auto-hide).
+
+  // Z-index
+  zIndex: 1000,             // Default z-index (default: 1000).
+  dragZIndex: 1002,         // Z-index while dragging (default: 1002).
+});
+```
+
 ## API Reference
 
 ### TabManager
@@ -115,12 +151,23 @@ const manager = new TabManager({
 - `getSnapChain(panelId)` - Get all panels in same chain
 - `snap(leftPanelId, rightPanelId)` - Manually snap two panels
 - `detach(panelId)` - Detach panel from chain
-- `createSnapChain(panelIds)` - Create chain from panel IDs
+- `createSnapChain(panelIds)` - Create chain from panel IDs (left-to-right order)
 - `updatePositions()` - Recalculate snapped positions
 
 #### Positioning
-- `positionPanelsFromRight(panelIds, gap?)` - Position from right edge
-- `positionPanelsFromLeft(panelIds, gap?)` - Position from left edge
+
+`positionPanelsFromRight` and `positionPanelsFromLeft` take panel IDs in **opposite orders**:
+
+- `positionPanelsFromRight(panelIds, gap?)` — first ID is placed at the **right edge**, rest go leftward. Pass IDs **right-to-left**.
+- `positionPanelsFromLeft(panelIds, gap?)` — first ID is placed at the **left edge**, rest go rightward. Pass IDs **left-to-right**.
+
+Because `createSnapChain` uses left-to-right order, you'll typically reverse the array between the two calls:
+
+```typescript
+// Visual order left-to-right: properties, tools, settings
+manager.positionPanelsFromRight(['settings', 'tools', 'properties']); // right-to-left
+manager.createSnapChain(['properties', 'tools', 'settings']);          // left-to-right
+```
 
 #### Anchors
 - `addAnchor(config)` - Add custom anchor
@@ -149,9 +196,53 @@ const manager = new TabManager({
 | `snap:panel` | Panels snapped together |
 | `snap:anchor` | Panels snapped to anchor |
 | `panel:detached` | Panel detached from chain |
+| `panel:pin` | Panel pinned/unpinned |
 | `panel:collapse` | Panel collapsed/expanded |
 | `panel:show` | Panel became visible (auto-hide) |
 | `panel:hide` | Panel became hidden (auto-hide) |
+
+## Drag Modes
+
+Each panel header has two drag zones:
+
+- **Detach grip** (small handle on the left of the header) — drags only that panel. It is detached from its snap chain and moved independently.
+- **Title / header area** — drags the entire connected snap chain as a group.
+
+Set `detachable: false` to hide the grip and make the header always drag the group.
+
+## Pinning
+
+Pinning locks a panel in place and exempts it from auto-hide. Enable the pin button with `pinnable: true`:
+
+```typescript
+manager.addPanel({
+  id: 'hud',
+  title: 'HUD',
+  pinnable: true,
+  startPinned: true,   // start already pinned
+  autoHideDelay: 5000, // pin will override this
+});
+```
+
+### What pinning does
+
+- **Prevents dragging** — a pinned panel cannot be moved, even when dragging its header.
+- **Immune to auto-hide** — a pinned panel is always visible regardless of the `autoHideDelay`. Pinning cancels any pending hide timer and shows the panel if it was hidden. Unpinning restarts the timer.
+- **Splits snap chains on drag** — if a pinned panel sits in the middle of a chain and you drag a neighbour, the chain severs at the pin boundary. Only the panels on the same side as the grabbed panel move; the pinned panel and everything beyond it stay put.
+
+```typescript
+// Chain: A — B — [P pinned] — C — D
+// Grabbing B moves [A, B] and severs the B↔P bond.
+// Grabbing C moves [C, D] and severs the P↔C bond.
+```
+
+### Events
+
+```typescript
+manager.on('panel:pin', ({ panel, isPinned }) => {
+  console.log(`${panel.id} is now ${isPinned ? 'pinned' : 'unpinned'}`);
+});
+```
 
 ## Multi-Section Panel Content
 
@@ -230,6 +321,10 @@ manager.addPanel({
 | `true` | `undefined` | Starts hidden, shows on activity, never hides again |
 | `false` | `3000` | Starts visible, hides after 3s of inactivity |
 | `true` | `3000` | Starts hidden, shows on activity, hides after 3s of inactivity |
+
+### Pin interaction
+
+Pinning a panel overrides auto-hide entirely for that panel — it stays visible regardless of inactivity. Unpinning re-enables the timer. Each panel is tracked independently; pinning one panel in a group has no effect on its neighbours.
 
 ### Events
 

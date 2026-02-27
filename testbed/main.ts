@@ -345,6 +345,7 @@ function initializeTestbed() {
   manager.on('snap:panel', (e) => logEvent('snap:panel', { panels: e.movingPanels.map(p => p.id), target: e.targetPanel.id }));
   manager.on('snap:anchor', (e) => logEvent('snap:anchor', { panels: e.movingPanels.map(p => p.id), anchor: e.anchor.config.id }));
   manager.on('panel:detached', (e) => logEvent('panel:detached', { panel: e.panel.id }));
+  manager.on('panel:pin', (e) => logEvent('panel:pin', { panel: e.panel.id }));
   manager.on('panel:collapse', (e) => logEvent('panel:collapse', { panel: e.panel.id, collapsed: e.isCollapsed }));
   manager.on('panel:show', (e) => logEvent('panel:show', { panel: e.panel.id, trigger: e.trigger }));
   manager.on('panel:hide', (e) => logEvent('panel:hide', { panel: e.panel.id, trigger: e.trigger }));
@@ -377,7 +378,9 @@ function initializeTestbed() {
   });
 
   // Position and snap together on right side
-  manager.positionPanelsFromRight(['settings', 'tools', 'properties']);
+  // positionPanelsFromRight places first ID at the right edge, so use right-to-left order.
+  // createSnapChain uses left-to-right order. These must be reversed relative to each other.
+  manager.positionPanelsFromRight(['properties', 'tools', 'settings']);
   manager.createSnapChain(['settings', 'tools', 'properties']);
 
   // ============================================================
@@ -539,7 +542,34 @@ function initializeTestbed() {
     `,
   });
 
-  panelCounter = 12;
+  // ============================================================
+  // Pin demo panel - tests pin immunity to auto-hide
+  // Starts hidden, shows on activity, hides after 3s of inactivity.
+  // Pinning should cancel the hide timer and keep the panel visible.
+  // ============================================================
+  const pinDemoPanel = manager.addPanel({
+    id: 'pin-demo',
+    title: 'Pin Demo',
+    width: 240,
+    startCollapsed: false,
+    pinnable: true,
+    startPinned: false,
+    startHidden: true,
+    autoHideDelay: 3000,
+    initialPosition: { x: (window.innerWidth / 2) - 120, y: 16 },
+    content: `
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <p style="font-size: 12px; color: #feca57;">
+          Auto-hides after 3s of inactivity.
+        </p>
+        <p style="font-size: 11px; color: #888;">
+          Pin it to prevent hiding. Unpin to re-enable auto-hide.
+        </p>
+      </div>
+    `,
+  });
+
+  panelCounter = 13;
 }
 
 function setupControls() {
