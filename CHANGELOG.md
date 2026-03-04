@@ -1,5 +1,11 @@
 # @blorkfield/blork-tabs
 
+## 0.5.0
+
+### Minor Changes
+
+- fd885fe: feat: tag button
+
 ## 0.4.0
 
 ### Minor Changes
