@@ -43,6 +43,8 @@ export { DragManager } from './DragManager';
 export { SnapPreview } from './SnapPreview';
 export { AutoHideManager } from './AutoHideManager';
 export { createDebugPanelContent, createDebugPanelInterface, createDebugLog, setupHoverEnlarge } from './DebugPanel';
+export { createTagButton } from './TagButton';
+export type { TagButtonConfig, TagButtonInputConfig, TagButtonNumberInputConfig, TagButtonSelectInputConfig, TagButton } from './TagButton';
 export type { AutoHideCallbacks } from './AutoHideManager';
 export {
   createPanelElement,

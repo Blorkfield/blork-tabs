@@ -220,6 +220,88 @@
   transition: none !important;
 }
 
+/* Tag Button */
+.blork-tabs-tag-btn {
+  padding: 4px 10px;
+  background: var(--blork-tabs-panel-bg, #1a1a2e);
+  border: 1px solid #3a3a5a;
+  border-radius: 4px;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: monospace;
+  transition: all 0.15s;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.blork-tabs-tag-btn:hover {
+  border-color: #5a5a7a;
+  color: #ccc;
+}
+
+.blork-tabs-tag-btn.active {
+  border-color: var(--blork-tabs-accent, #4a90d9);
+  color: var(--blork-tabs-accent, #4a90d9);
+  box-shadow: 0 0 8px rgba(74, 144, 217, 0.5), 0 0 2px rgba(74, 144, 217, 0.8);
+  text-shadow: 0 0 8px rgba(74, 144, 217, 0.9);
+}
+
+/* Tag inputs (hidden until button is active) */
+.blork-tabs-tag-inputs {
+  display: none;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+}
+
+.blork-tabs-tag-btn.active .blork-tabs-tag-inputs {
+  display: inline-flex;
+}
+
+.blork-tabs-tag-input {
+  width: 36px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #555;
+  color: inherit;
+  font-size: 10px;
+  font-family: monospace;
+  text-align: center;
+  padding: 0 2px;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.blork-tabs-tag-input::-webkit-outer-spin-button,
+.blork-tabs-tag-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.blork-tabs-tag-btn.active .blork-tabs-tag-input {
+  border-bottom-color: rgba(74, 144, 217, 0.6);
+}
+
+.blork-tabs-tag-select {
+  background: var(--blork-tabs-panel-bg, #1a1a2e);
+  border: none;
+  border-bottom: 1px solid #555;
+  color: #ccc;
+  font-size: 10px;
+  font-family: monospace;
+  outline: none;
+  cursor: pointer;
+  max-width: 80px;
+}
+
+.blork-tabs-tag-btn.active .blork-tabs-tag-select {
+  border-bottom-color: rgba(74, 144, 217, 0.6);
+  color: var(--blork-tabs-accent, #4a90d9);
+}
+
 /* Debug Panel Log */
 .blork-tabs-debug-log {
   min-height: 100px;
