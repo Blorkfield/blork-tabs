@@ -1,5 +1,5 @@
 // Import exactly as npm users would
-import { TabManager, DebugPanel, DebugLog } from '@blorkfield/blork-tabs';
+import { TabManager, DebugPanel, DebugLog, createTagButton } from '@blorkfield/blork-tabs';
 import '@blorkfield/blork-tabs/styles.css';
 
 // ============================================================
@@ -76,7 +76,7 @@ function createSampleContent(type: string): string {
               <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,${i === 2 ? '0.1' : '0.02'}); border-radius: 4px; cursor: pointer;">
                 <input type="checkbox" ${i !== 3 ? 'checked' : ''} />
                 <span style="flex: 1; font-size: 12px;">${layer}</span>
-                <span style="font-size: 10px; color: #666;">👁</span>
+                <span style="font-size: 10px; color: #666;">◎</span>
               </div>
             `).join('')}
         </div>
@@ -134,7 +134,7 @@ function createSampleContent(type: string): string {
           ${['project.json', 'assets/', 'components/', 'styles.css', 'index.html', 'README.md']
             .map(file => `
               <div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: rgba(255,255,255,0.02); border-radius: 4px; cursor: pointer; font-size: 12px;">
-                <span>${file.endsWith('/') ? '📁' : '📄'}</span>
+                <span style="display:inline-block;width:14px;height:12px;background:${file.endsWith('/') ? '#4a5a7a' : 'transparent'};border:1px solid ${file.endsWith('/') ? '#6a7a9a' : '#4a4a6a'};border-radius:2px;flex-shrink:0;"></span>
                 <span>${file}</span>
               </div>
             `).join('')}
@@ -569,7 +569,88 @@ function initializeTestbed() {
     `,
   });
 
-  panelCounter = 13;
+  // ============================================================
+  // Tag Buttons demo panel
+  // ============================================================
+  const tagPanel = manager.addPanel({
+    id: 'tag-buttons',
+    title: 'Tag Buttons',
+    width: 280,
+    startCollapsed: false,
+    initialPosition: { x: (window.innerWidth / 2) + 20, y: 150 },
+    content: `
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:11px;color:#888;">Simple toggles</div>
+          <div id="tag-row-simple" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:11px;color:#888;">With inline inputs</div>
+          <div id="tag-row-inputs" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+        <div style="font-size:10px;color:#555;font-family:monospace;background:rgba(0,0,0,0.3);padding:6px 8px;border-radius:4px;word-break:break-all;" id="tag-demo-output">Active: none</div>
+      </div>
+    `,
+  });
+
+  const tagRowSimple = tagPanel.contentWrapper.querySelector('#tag-row-simple') as HTMLElement;
+  const tagRowInputs = tagPanel.contentWrapper.querySelector('#tag-row-inputs') as HTMLElement;
+  const tagOutput    = tagPanel.contentWrapper.querySelector('#tag-demo-output') as HTMLElement;
+
+  const visibleBtn  = createTagButton('visible',  { defaultActive: true });
+  const lockedBtn   = createTagButton('locked');
+  const activeBtn   = createTagButton('active',   { defaultActive: true });
+  const hiddenBtn   = createTagButton('hidden');
+
+  const scaleBtn    = createTagButton('scale', {
+    inputs: [
+      { label: 'x', defaultValue: 1, step: 0.1, min: 0 },
+      { label: 'y', defaultValue: 1, step: 0.1, min: 0 },
+    ],
+  });
+  const opacityBtn  = createTagButton('opacity', {
+    inputs: [{ label: '%', defaultValue: 100, step: 1, min: 0, max: 100 }],
+  });
+  const blendBtn    = createTagButton('blend', {
+    inputs: [{ type: 'select', options: [
+      { value: 'normal',   label: 'normal' },
+      { value: 'multiply', label: 'multiply' },
+      { value: 'screen',   label: 'screen' },
+      { value: 'overlay',  label: 'overlay' },
+    ] }],
+  });
+
+  for (const btn of [visibleBtn, lockedBtn, activeBtn, hiddenBtn]) {
+    tagRowSimple.appendChild(btn.element);
+  }
+  for (const btn of [scaleBtn, opacityBtn, blendBtn]) {
+    tagRowInputs.appendChild(btn.element);
+  }
+
+  const allTagBtns = [visibleBtn, lockedBtn, activeBtn, hiddenBtn, scaleBtn, opacityBtn, blendBtn];
+
+  function refreshTagOutput() {
+    const active: string[] = [];
+    if (visibleBtn.isActive())  active.push('visible');
+    if (lockedBtn.isActive())   active.push('locked');
+    if (activeBtn.isActive())   active.push('active');
+    if (hiddenBtn.isActive())   active.push('hidden');
+    if (scaleBtn.isActive())    active.push(`scale(${scaleBtn.getValue(0)}, ${scaleBtn.getValue(1)})`);
+    if (opacityBtn.isActive())  active.push(`opacity(${opacityBtn.getValue(0)}%)`);
+    if (blendBtn.isActive())    active.push(`blend(${blendBtn.getValue(0)})`);
+    tagOutput.textContent = active.length ? `Active: ${active.join(', ')}` : 'Active: none';
+  }
+
+  for (const btn of allTagBtns) {
+    btn.element.addEventListener('click', refreshTagOutput);
+    for (let i = 0; i < 4; i++) {
+      btn.getInput(i)?.addEventListener('input', refreshTagOutput);
+    }
+  }
+
+  refreshTagOutput();
+
+  panelCounter = 14;
 }
 
 function setupControls() {
