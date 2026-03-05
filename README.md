@@ -10,6 +10,8 @@ A framework-agnostic tab/panel management system with snapping and docking capab
 - **Collapse/Expand** - Panels can be collapsed with automatic repositioning
 - **Pin** - Pin panels to prevent dragging and opt out of auto-hide
 - **Auto-Hide** - Panels can hide after inactivity and show on interaction
+- **Tag Buttons** - Toggleable pill buttons that reveal inline inputs when active
+- **Debug Panel** - In-browser event log with hover-to-enlarge, useful for OBS sources
 - **Event System** - Subscribe to drag, snap, and collapse events
 - **Fully Typed** - Complete TypeScript support
 - **Framework Agnostic** - Works with plain DOM or any framework
@@ -466,6 +468,83 @@ embeddedLog.clear();
 ```
 
 The embedded log supports the same hover-to-enlarge behavior as the standalone debug panel.
+
+## Tag Buttons
+
+`createTagButton` creates a toggleable pill-shaped button that optionally reveals inline number or select inputs when active. Useful for filters, flags, or any option that may carry a value.
+
+```typescript
+import { createTagButton } from '@blorkfield/blork-tabs';
+
+// Simple toggle
+const visibleBtn = createTagButton('visible', { defaultActive: true });
+container.appendChild(visibleBtn.element);
+
+// Toggle with inline number inputs (revealed when active)
+const scaleBtn = createTagButton('scale', {
+  inputs: [
+    { label: 'x', defaultValue: 1, step: 0.1, min: 0 },
+    { label: 'y', defaultValue: 1, step: 0.1, min: 0 },
+  ],
+});
+container.appendChild(scaleBtn.element);
+
+// Toggle with inline select input
+const blendBtn = createTagButton('blend', {
+  inputs: [{ type: 'select', options: [
+    { value: 'normal',   label: 'normal' },
+    { value: 'multiply', label: 'multiply' },
+    { value: 'screen',   label: 'screen' },
+  ]}],
+});
+container.appendChild(blendBtn.element);
+
+// Read state
+if (scaleBtn.isActive()) {
+  const sx = parseFloat(scaleBtn.getValue(0));
+  const sy = parseFloat(scaleBtn.getValue(1));
+}
+
+// Direct input element access (e.g. to populate a select dynamically)
+const selectEl = blendBtn.getInput(0); // HTMLSelectElement
+```
+
+### TagButton API
+
+```typescript
+const btn = createTagButton(label, config?);
+
+btn.element       // The DOM element to append
+btn.isActive()    // Whether the button is toggled on
+btn.setActive(v)  // Programmatically set state
+btn.toggle()      // Flip state
+btn.getValue(i)   // String value of input at index i
+btn.getInput(i)   // Raw HTMLInputElement | HTMLSelectElement at index i
+```
+
+### TagButtonConfig
+
+```typescript
+{
+  defaultActive?: boolean;              // Initial active state (default: false)
+  inputs?: TagButtonInputConfig[];      // Inline inputs revealed when active
+  onChange?: (active: boolean) => void; // Callback on toggle
+}
+```
+
+### Input types
+
+```typescript
+// Number input
+{ type?: 'number', label?: string, defaultValue?: number, step?: number, min?: number, max?: number }
+
+// Select input
+{ type: 'select', label?: string, options?: Array<{ value: string; label: string }> }
+```
+
+### Styling
+
+Tag buttons use the `.blork-tabs-tag-btn` class and respond to `--blork-tabs-accent` for the active glow color. Include `styles.css` to get the default appearance.
 
 ## CSS Customization
 
